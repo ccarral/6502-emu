@@ -1,25 +1,30 @@
-const OPS: [Opc; 0x10] = [
+const OPS: [Inst; 0x10] = [
     // 0x00
-    Opc::Brk(AddressMode::Impl),
-    Opc::Ora(AddressMode::IndX),
-    Opc::None,
-    Opc::None,
-    Opc::None,
-    Opc::Ora(AddressMode::Zpg),
-    Opc::Asl(AddressMode::Zpg),
-    Opc::None,
-    Opc::Php(AddressMode::Impl),
-    Opc::Ora(AddressMode::Imm),
-    Opc::Asl(AddressMode::Acc),
-    Opc::None,
-    Opc::None,
-    Opc::Ora(AddressMode::Abs),
-    Opc::Asl(AddressMode::Abs),
-    Opc::None,
+    Inst::Brk(AddressMode::Impl),
+    Inst::Ora(AddressMode::IndX),
+    Inst::None,
+    Inst::None,
+    Inst::None,
+    Inst::Ora(AddressMode::Zpg),
+    Inst::Asl(AddressMode::Zpg),
+    Inst::None,
+    Inst::Php(AddressMode::Impl),
+    Inst::Ora(AddressMode::Imm),
+    Inst::Asl(AddressMode::Acc),
+    Inst::None,
+    Inst::None,
+    Inst::Ora(AddressMode::Abs),
+    Inst::Asl(AddressMode::Abs),
+    Inst::None,
     // 0x10
 ];
 
-pub enum Opc {
+pub const fn get_inst(opc: u8) -> Inst {
+    OPS[opc as usize]
+}
+
+#[derive(Copy, Clone)]
+pub enum Inst {
     Adc(AddressMode),
     And(AddressMode),
     Asl(AddressMode),
@@ -79,6 +84,7 @@ pub enum Opc {
     None,
 }
 
+#[derive(Copy, Clone)]
 pub enum AddressMode {
     Acc,
     Abs,
@@ -96,7 +102,7 @@ pub enum AddressMode {
 }
 
 impl AddressMode {
-    pub const fn expected_args(&self) -> usize {
+    pub const fn expected_bytes(&self) -> usize {
         match self {
             AddressMode::Acc => 0,
             AddressMode::Abs => 2,
@@ -113,4 +119,9 @@ impl AddressMode {
             AddressMode::ZpgY => 1,
         }
     }
+}
+
+pub enum Operand {
+    One(u8),
+    Two(u8),
 }
