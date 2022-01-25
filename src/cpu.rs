@@ -61,50 +61,52 @@ where
         self.ac
     }
 
-    pub(crate) fn fetch_next_inst(&self) -> Inst {
+    #[inline]
+    pub(crate) fn fetch_next_inst(&self) -> (Inst, AddressMode) {
         // Read byte at pc
         let byte = self.mem.read_byte(self.pc());
-        opc::get_inst(byte)
+        (opc::get_inst(byte), opc::get_address_mode(byte))
     }
 
-    pub fn execute_inst(&mut self, inst: Inst) -> Result6052 {
+    #[inline]
+    pub fn execute_inst(&mut self, inst: Inst, address_mode: AddressMode) -> Result6052 {
         // Should "panic" if the program is not well formed
         match inst {
-            Inst::Adc(_) => todo!(),
-            Inst::And(_) => todo!(),
-            Inst::Asl(_) => todo!(),
-            Inst::Bcc(_) => todo!(),
-            Inst::Bcs(_) => todo!(),
-            Inst::Beq(_) => todo!(),
-            Inst::Bit(_) => todo!(),
-            Inst::Bmi(_) => todo!(),
-            Inst::Bne(_) => todo!(),
-            Inst::Bpl(_) => todo!(),
-            Inst::Brk(_) => todo!(),
-            Inst::Bvc(_) => todo!(),
-            Inst::Bvs(_) => todo!(),
-            Inst::Clc(_) => todo!(),
-            Inst::Cld(_) => todo!(),
-            Inst::Cli(_) => todo!(),
-            Inst::Clv(_) => todo!(),
-            Inst::Cmp(_) => todo!(),
-            Inst::Cpx(_) => todo!(),
-            Inst::Cpy(_) => todo!(),
-            Inst::Dec(_) => todo!(),
-            Inst::Dex(_) => todo!(),
-            Inst::Dey(_) => todo!(),
-            Inst::Eor(_) => todo!(),
-            Inst::Inc(_) => todo!(),
-            Inst::Inx(_) => todo!(),
-            Inst::Iny(_) => todo!(),
-            Inst::Jmp(_) => todo!(),
-            Inst::Jsr(_) => todo!(),
-            Inst::Lda(_) => todo!(),
-            Inst::Ldx(_) => todo!(),
-            Inst::Ldy(_) => todo!(),
-            Inst::Lsr(_) => todo!(),
-            Inst::Nop(_) => todo!(),
-            Inst::Ora(address_mode) => {
+            Inst::Adc => todo!(),
+            Inst::And => todo!(),
+            Inst::Asl => todo!(),
+            Inst::Bcc => todo!(),
+            Inst::Bcs => todo!(),
+            Inst::Beq => todo!(),
+            Inst::Bit => todo!(),
+            Inst::Bmi => todo!(),
+            Inst::Bne => todo!(),
+            Inst::Bpl => todo!(),
+            Inst::Brk => todo!(),
+            Inst::Bvc => todo!(),
+            Inst::Bvs => todo!(),
+            Inst::Clc => todo!(),
+            Inst::Cld => todo!(),
+            Inst::Cli => todo!(),
+            Inst::Clv => todo!(),
+            Inst::Cmp => todo!(),
+            Inst::Cpx => todo!(),
+            Inst::Cpy => todo!(),
+            Inst::Dec => todo!(),
+            Inst::Dex => todo!(),
+            Inst::Dey => todo!(),
+            Inst::Eor => todo!(),
+            Inst::Inc => todo!(),
+            Inst::Inx => todo!(),
+            Inst::Iny => todo!(),
+            Inst::Jmp => todo!(),
+            Inst::Jsr => todo!(),
+            Inst::Lda => todo!(),
+            Inst::Ldx => todo!(),
+            Inst::Ldy => todo!(),
+            Inst::Lsr => todo!(),
+            Inst::Nop => todo!(),
+            Inst::Ora => {
                 let or_operand = match address_mode {
                     AddressMode::Imm => {
                         // Read one byte after pc
@@ -134,27 +136,27 @@ where
 
                 Ok(())
             }
-            Inst::Pha(_) => todo!(),
-            Inst::Php(_) => todo!(),
-            Inst::Pla(_) => todo!(),
-            Inst::Plp(_) => todo!(),
-            Inst::Rol(_) => todo!(),
-            Inst::Ror(_) => todo!(),
-            Inst::Rti(_) => todo!(),
-            Inst::Rts(_) => todo!(),
-            Inst::Sbc(_) => todo!(),
-            Inst::Sec(_) => todo!(),
-            Inst::Sed(_) => todo!(),
-            Inst::Sei(_) => todo!(),
-            Inst::Sta(_) => todo!(),
-            Inst::Stx(_) => todo!(),
-            Inst::Sty(_) => todo!(),
-            Inst::Tax(_) => todo!(),
-            Inst::Tay(_) => todo!(),
-            Inst::Tsx(_) => todo!(),
-            Inst::Txa(_) => todo!(),
-            Inst::Txs(_) => todo!(),
-            Inst::Tya(_) => todo!(),
+            Inst::Pha => todo!(),
+            Inst::Php => todo!(),
+            Inst::Pla => todo!(),
+            Inst::Plp => todo!(),
+            Inst::Rol => todo!(),
+            Inst::Ror => todo!(),
+            Inst::Rti => todo!(),
+            Inst::Rts => todo!(),
+            Inst::Sbc => todo!(),
+            Inst::Sec => todo!(),
+            Inst::Sed => todo!(),
+            Inst::Sei => todo!(),
+            Inst::Sta => todo!(),
+            Inst::Stx => todo!(),
+            Inst::Sty => todo!(),
+            Inst::Tax => todo!(),
+            Inst::Tay => todo!(),
+            Inst::Tsx => todo!(),
+            Inst::Txa => todo!(),
+            Inst::Txs => todo!(),
+            Inst::Tya => todo!(),
             Inst::None => todo!(),
         }
     }

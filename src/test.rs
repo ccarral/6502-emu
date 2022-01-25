@@ -1,11 +1,15 @@
 use crate::cpu::Cpu;
-use crate::memory::SimpleMemory;
+use crate::memory::{Memory, SimpleMemory};
 use asm6502::assemble;
 
-pub fn new_cpu_with_asm(asm: &str) -> Result<Cpu<SimpleMemory>, String> {
+fn new_mem_with_asm(asm: &str) -> Result<SimpleMemory, String> {
     let mut bin = Vec::new();
     assemble(asm.as_bytes(), &mut bin)?;
-    let mem = SimpleMemory::from_rom(&bin);
+    Ok(SimpleMemory::from_rom(&bin))
+}
+
+fn new_cpu_with_asm(asm: &str) -> Result<Cpu<SimpleMemory>, String> {
+    let mem = new_mem_with_asm(asm)?;
     let cpu = Cpu::with_mem(mem);
     Ok(cpu)
 }
@@ -16,7 +20,16 @@ pub fn test_ora() {
     let asm = "ORA #$10\n";
     let mut cpu = new_cpu_with_asm(asm).unwrap();
     cpu.set_ac(0x03);
-    let inst = cpu.fetch_next_inst();
-    cpu.execute_inst(inst).unwrap();
+    let (inst, addr_mode) = cpu.fetch_next_inst();
+    cpu.execute_inst(inst, addr_mode).unwrap();
+    assert_eq!(cpu.ac(), 0x13);
+
+    // Test Zpg addressing
+    let mut mem = new_mem_with_asm("ORA $20").unwrap();
+    mem.write_byte(0x20, 0x10);
+    let mut cpu = Cpu::with_mem(mem);
+    cpu.set_ac(0x03);
+    let (inst, addr_mode) = cpu.fetch_next_inst();
+    cpu.execute_inst(inst, addr_mode).unwrap();
     assert_eq!(cpu.ac(), 0x13);
 }
