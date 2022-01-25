@@ -1,51 +1,29 @@
-const OPS: [Inst; 0x10] = [
+#[derive(Copy, Clone)]
+pub struct OpMode(pub Inst, pub AddressMode, pub u8);
+
+const OPS: [Option<OpMode>; 0x10] = [
     // 0x00
-    Inst::Brk,
-    Inst::Ora,
-    Inst::None,
-    Inst::None,
-    Inst::None,
-    Inst::Ora,
-    Inst::Asl,
-    Inst::None,
-    Inst::Php,
-    Inst::Ora,
-    Inst::Asl,
-    Inst::None,
-    Inst::None,
-    Inst::Ora,
-    Inst::Asl,
-    Inst::None,
+    Some(OpMode(Inst::Brk, AddressMode::Impl, 0)),
+    Some(OpMode(Inst::Ora, AddressMode::IndX, 0)),
+    None,
+    None,
+    None,
+    Some(OpMode(Inst::Ora, AddressMode::Zpg, 0)),
+    Some(OpMode(Inst::Asl, AddressMode::Zpg, 0)),
+    None,
+    Some(OpMode(Inst::Php, AddressMode::Impl, 0)),
+    Some(OpMode(Inst::Ora, AddressMode::Imm, 0)),
+    Some(OpMode(Inst::Asl, AddressMode::Acc, 0)),
+    None,
+    None,
+    Some(OpMode(Inst::Ora, AddressMode::Abs, 0)),
+    Some(OpMode(Inst::Asl, AddressMode::Abs, 0)),
+    None,
     // 0x10
 ];
 
-const ADDR_MODE: [AddressMode; 0x10] = [
-    // 0x00
-    AddressMode::Impl,
-    AddressMode::IndX,
-    AddressMode::None,
-    AddressMode::None,
-    AddressMode::None,
-    AddressMode::Zpg,
-    AddressMode::Zpg,
-    AddressMode::None,
-    AddressMode::Impl,
-    AddressMode::Imm,
-    AddressMode::Acc,
-    AddressMode::None,
-    AddressMode::None,
-    AddressMode::Abs,
-    AddressMode::Abs,
-    AddressMode::None,
-    // 0x10
-];
-
-pub const fn get_inst(opc: u8) -> Inst {
+pub const fn get_op_mode(opc: u8) -> Option<OpMode> {
     OPS[opc as usize]
-}
-
-pub const fn get_address_mode(opc: u8) -> AddressMode {
-    ADDR_MODE[opc as usize]
 }
 
 #[derive(Copy, Clone)]

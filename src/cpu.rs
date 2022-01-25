@@ -1,6 +1,6 @@
-use crate::error::Result6052;
+use crate::error::Error6502;
 use crate::memory::Memory;
-use crate::opc::{self, AddressMode, Inst};
+use crate::opc::{self, AddressMode, Inst, OpMode};
 
 pub struct Cpu<M> {
     pc: u16,
@@ -62,14 +62,17 @@ where
     }
 
     #[inline]
-    pub(crate) fn fetch_next_inst(&self) -> (Inst, AddressMode) {
+    pub(crate) fn fetch_next_inst(&self) -> Result<OpMode, Error6502> {
         // Read byte at pc
         let byte = self.mem.read_byte(self.pc());
-        (opc::get_inst(byte), opc::get_address_mode(byte))
+        match opc::get_op_mode(byte) {
+            Some(op_mode) => Ok(op_mode),
+            None => Err(Error6502::InvalidInstruction),
+        }
     }
 
     #[inline]
-    pub fn execute_inst(&mut self, inst: Inst, address_mode: AddressMode) -> Result6052 {
+    pub fn execute_inst(&mut self, inst: Inst, address_mode: AddressMode) -> Result<(), Error6502> {
         // Should "panic" if the program is not well formed
         match inst {
             Inst::Adc => todo!(),

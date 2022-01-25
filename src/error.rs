@@ -3,20 +3,17 @@ use std::fmt::Display;
 
 #[derive(Debug)]
 pub enum Error6502 {
-    InvalidInstruction(usize),
+    InvalidInstruction,
 }
 
 impl Display for Error6502 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Error6502::InvalidInstruction(pos) => f.write_fmt(format_args!(
-                "Invalid instruction encountered at pos. {}",
-                pos
-            )),
+            Error6502::InvalidInstruction => {
+                f.write_fmt(format_args!("Invalid instruction encountered"))
+            }
         }
     }
 }
 
 impl Error for Error6502 {}
-
-pub type Result6052 = Result<(), Error6502>;
