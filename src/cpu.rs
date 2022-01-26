@@ -1,40 +1,25 @@
 use crate::error::Error6502;
 use crate::memory::Memory;
 use crate::opc::{self, AddressMode, Inst, OpMode};
+use crate::util;
 
 pub struct Cpu<M> {
     pc: u16,
     ac: u8,
     x: u8,
     y: u8,
-    sr: Flags,
+    sr: u8,
     sp: u8,
     mem: M,
+    current_inst_cycles_left: u8,
 }
-
-pub struct Flags {
-    n: bool,
-    v: bool,
-    b: bool,
-    d: bool,
-    i: bool,
-    z: bool,
-    c: bool,
-}
-
-impl Default for Flags {
-    fn default() -> Self {
-        Self {
-            n: false,
-            v: false,
-            b: false,
-            d: false,
-            i: false,
-            z: false,
-            c: false,
-        }
-    }
-}
+const N_FLAG_BITMASK: u8 = 0b10000000;
+const V_FLAG_BITMASK: u8 = 0b01000000;
+const B_FLAG_BITMASK: u8 = 0b00010000;
+const D_FLAG_BITMASK: u8 = 0b00001000;
+const I_FLAG_BITMASK: u8 = 0b00000100;
+const Z_FLAG_BITMASK: u8 = 0b00000010;
+const C_FLAG_BITMASK: u8 = 0b00000001;
 
 impl<M> Cpu<M>
 where
@@ -46,25 +31,102 @@ where
             ac: 0x00,
             x: 0x00,
             y: 0x00,
-            sr: Default::default(),
+            sr: 0x00,
             sp: 0x00,
             mem,
+            current_inst_cycles_left: 0,
         }
     }
+
+    /// Run program loaded in cpu. A closure can be optionally passed
+    /// if we want to do something (displaying registers, etc.) with the `Cpu`
+    /// on each cycle.
+    ///
+    /// # Arguments
+    ///
+    /// * `callable` - Closure that takes an immutable reference to the Cpu.  
+    ///
+    /// # Errors
+    ///
+    /// Fails whenever fetching the next (valid) instruction fails.
+    pub fn run(mut self, callable: &dyn Fn(&Cpu<M>)) -> Result<(), Error6502> {
+        // Read pc from $FFFC and $FFFD
+        let high = self.mem.read_byte(0xFFFC);
+        let low = self.mem.read_byte(0xFFFD);
+        let pc = util::combine_u8(low, high);
+        self.set_pc(pc);
+
+        while !self.exit() {
+            self.step()?;
+            callable(&self);
+        }
+
+        Ok(())
+    }
+
+    pub fn step(&mut self) -> Result<(), Error6502> {
+        if self.current_inst_cycles_left > 0 {
+            self.current_inst_cycles_left -= 1
+        } else {
+            let OpMode(inst, addr_mode, cycles) = self.fetch_next_inst()?;
+            self.execute_inst(inst, addr_mode)?;
+            self.current_inst_cycles_left = cycles - 1;
+        }
+        Ok(())
+    }
+
+    pub fn exit(&self) -> bool {
+        false
+    }
+
     /// Convert u16 pc to usize so it can be used to address memory
-    pub fn pc(&self) -> usize {
+    pub fn pc_usize(&self) -> usize {
         // Mask pc to u16::MAX
         self.pc as usize
+    }
+
+    pub fn set_pc(&mut self, val: u16) {
+        self.pc = val;
+    }
+
+    pub(crate) fn add_to_pc(&mut self, val: u16) {
+        self.pc += val;
     }
 
     pub(crate) fn ac(&self) -> u8 {
         self.ac
     }
 
+    pub fn or_flags(&mut self, mask: u8) {
+        self.sr |= mask;
+    }
+
+    pub fn n_flag(&self) -> bool {
+        (self.sr & N_FLAG_BITMASK) != 0
+    }
+    pub fn v_flag(&self) -> bool {
+        (self.sr & V_FLAG_BITMASK) != 0
+    }
+    pub fn b_flag(&self) -> bool {
+        (self.sr & B_FLAG_BITMASK) != 0
+    }
+    pub fn d_flag(&self) -> bool {
+        (self.sr & D_FLAG_BITMASK) != 0
+    }
+    pub fn i_flag(&self) -> bool {
+        (self.sr & I_FLAG_BITMASK) != 0
+    }
+    pub fn z_flag(&self) -> bool {
+        (self.sr & Z_FLAG_BITMASK) != 0
+    }
+    pub fn c_flag(&self) -> bool {
+        (self.sr & C_FLAG_BITMASK) != 0
+    }
+
     #[inline]
     pub(crate) fn fetch_next_inst(&self) -> Result<OpMode, Error6502> {
         // Read byte at pc
-        let byte = self.mem.read_byte(self.pc());
+        let byte = self.mem.read_byte(self.pc_usize());
         match opc::get_op_mode(byte) {
             Some(op_mode) => Ok(op_mode),
             None => Err(Error6502::InvalidInstruction),
@@ -74,6 +136,7 @@ where
     #[inline]
     pub fn execute_inst(&mut self, inst: Inst, address_mode: AddressMode) -> Result<(), Error6502> {
         // Should "panic" if the program is not well formed
+        let mut instr_len = 0u16;
         match inst {
             Inst::Adc => todo!(),
             Inst::And => todo!(),
@@ -113,17 +176,20 @@ where
                 let or_operand = match address_mode {
                     AddressMode::Imm => {
                         // Read one byte after pc
-                        self.mem.read_byte(self.pc() + 1)
+                        instr_len = 2;
+                        self.mem.read_byte(self.pc_usize() + 1)
                     }
                     AddressMode::Zpg => {
                         // Read Zero Page address $00LL
-                        let addr = self.mem.read_byte(self.pc() + 1);
+                        let addr = self.mem.read_byte(self.pc_usize() + 1);
+                        instr_len = 2;
                         self.mem.read_byte(addr as usize)
                     }
                     AddressMode::ZpgX => {
                         // Read zero page address $00LL
-                        let addr = self.mem.read_byte(self.pc() + 1);
+                        let addr = self.mem.read_byte(self.pc_usize() + 1);
                         let effective_addr = addr + self.x;
+                        instr_len = 2;
                         effective_addr
                     }
                     AddressMode::Abs => todo!(),
@@ -137,6 +203,15 @@ where
                 // or with acc
                 self.ac |= or_operand;
 
+                // Update N flag
+                self.or_flags(N_FLAG_BITMASK & self.ac);
+
+                // Update Z flag with value from acc
+                // If result is zero, then mask = 11111111
+                let zero_mask = !(0 & self.ac);
+                self.or_flags(zero_mask & Z_FLAG_BITMASK);
+
+                self.add_to_pc(instr_len);
                 Ok(())
             }
             Inst::Pha => todo!(),
@@ -173,13 +248,25 @@ where
     M: Memory,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        fn format_flag(flag: bool) -> u8 {
+            match flag {
+                true => 1,
+                false => 0,
+            }
+        }
         f.write_fmt(format_args!(
-            "\
-Registers:
+            "
+    Registers:
     PC {:#04x}
-    AC {:#04x}",
-            self.pc(),
-            self.ac
+    AC {:#04x}
+
+    Flags:
+    NV-BDIZC
+    {:08b}
+    ",
+            self.pc_usize(),
+            self.ac,
+            self.sr
         ))
     }
 }

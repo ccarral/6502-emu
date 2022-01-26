@@ -1,19 +1,7 @@
 use crate::cpu::Cpu;
-use crate::memory::{Memory, SimpleMemory};
+use crate::memory::Memory;
 use crate::opc::OpMode;
-use asm6502::assemble;
-
-fn new_mem_with_asm(asm: &str) -> Result<SimpleMemory, String> {
-    let mut bin = Vec::new();
-    assemble(asm.as_bytes(), &mut bin)?;
-    Ok(SimpleMemory::from_rom(&bin))
-}
-
-fn new_cpu_with_asm(asm: &str) -> Result<Cpu<SimpleMemory>, String> {
-    let mem = new_mem_with_asm(asm)?;
-    let cpu = Cpu::with_mem(mem);
-    Ok(cpu)
-}
+use crate::util::*;
 
 #[test]
 pub fn test_ora() {
