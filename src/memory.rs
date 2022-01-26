@@ -1,6 +1,6 @@
 pub trait Memory {
     fn write_byte(&mut self, addr: usize, byte: u8);
-    fn read_byte(&self, addr: usize) -> u8;
+    fn read_byte(&self, addr: u16) -> u8;
 }
 
 pub struct SimpleMemory {
@@ -28,7 +28,7 @@ impl Memory for SimpleMemory {
         self.inner[addr as usize] = byte;
     }
 
-    fn read_byte(&self, addr: usize) -> u8 {
-        self.inner[addr]
+    fn read_byte(&self, addr: u16) -> u8 {
+        self.inner[addr as usize]
     }
 }

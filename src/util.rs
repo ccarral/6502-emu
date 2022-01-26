@@ -2,10 +2,10 @@ use crate::cpu::Cpu;
 use crate::memory::SimpleMemory;
 use asm6502::assemble;
 
-pub fn combine_u8(ll: u8, hh: u8) -> u16 {
-    let low = (ll as u16) << 8;
-    let high = hh as u16;
-    low | high
+pub const fn combine_u8_to_u16(hh: u8, ll: u8) -> u16 {
+    let high = (hh as u16) << 8;
+    let low = ll as u16;
+    high | low
 }
 
 pub fn new_mem_with_asm(asm: &str) -> Result<SimpleMemory, String> {
