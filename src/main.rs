@@ -14,12 +14,12 @@ fn main() {
     let cpu = Cpu::with_mem(mem);
 
     let stdin = std::io::stdin();
+    let mut buf = String::new();
 
-    let callable = |cpu: &Cpu<SimpleMemory>| {
-        let mut buf = String::new();
+    let mut callable = |cpu: &Cpu<SimpleMemory>| {
         print!("\r{cpu}\n");
         stdin.read_line(&mut buf).unwrap();
     };
 
-    cpu.run(&callable).unwrap();
+    cpu.run(&mut callable).unwrap();
 }

@@ -26,8 +26,12 @@ where
     M: Memory + Sized,
 {
     pub fn with_mem(mem: M) -> Self {
+        // Read PC from $FFFC and $FFFD
+        let high = mem.read_byte(0xFFFC);
+        let low = mem.read_byte(0xFFFD);
+        let pc = util::combine_u8(low, high);
         Self {
-            pc: 0x0000,
+            pc,
             ac: 0x00,
             x: 0x00,
             y: 0x00,
@@ -49,13 +53,7 @@ where
     /// # Errors
     ///
     /// Fails whenever fetching the next (valid) instruction fails.
-    pub fn run(mut self, callable: &dyn Fn(&Cpu<M>)) -> Result<(), Error6502> {
-        // Read pc from $FFFC and $FFFD
-        let high = self.mem.read_byte(0xFFFC);
-        let low = self.mem.read_byte(0xFFFD);
-        let pc = util::combine_u8(low, high);
-        self.set_pc(pc);
-
+    pub fn run(mut self, callable: &mut dyn FnMut(&Cpu<M>)) -> Result<(), Error6502> {
         while !self.exit() {
             self.step()?;
             callable(&self);
@@ -79,10 +77,37 @@ where
         false
     }
 
+    /// Checks if value is Zero and updates Z flag accordingly
+    ///
+    /// # Arguments
+    ///
+    /// * `val` - value to be checked
+    pub fn update_z_flag_with(&mut self, val: u8) {
+        if val == 0x00 {
+            self.sr |= Z_FLAG_BITMASK;
+        } else {
+            self.sr &= !Z_FLAG_BITMASK;
+        }
+    }
+
+    /// Checks if value is negative and updates N flag accordingly
+    ///
+    /// # Arguments
+    ///
+    /// * `val` - value to be checked
+    pub fn update_n_flag_with(&mut self, val: u8) {
+        const NEG_BITMASK: u8 = 0b10000000;
+        if val & NEG_BITMASK == NEG_BITMASK {
+            self.sr |= N_FLAG_BITMASK;
+        } else {
+            self.sr &= !N_FLAG_BITMASK;
+        }
+    }
+
     /// Convert u16 pc to usize so it can be used to address memory
     pub fn pc_usize(&self) -> usize {
         // Mask pc to u16::MAX
-        self.pc as usize
+        self.pc as usize & 0xFFFF
     }
 
     pub fn set_pc(&mut self, val: u16) {
@@ -175,8 +200,8 @@ where
             Inst::Ora => {
                 let or_operand = match address_mode {
                     AddressMode::Imm => {
-                        // Read one byte after pc
                         instr_len = 2;
+                        // Read one byte after pc
                         self.mem.read_byte(self.pc_usize() + 1)
                     }
                     AddressMode::Zpg => {
@@ -204,12 +229,10 @@ where
                 self.ac |= or_operand;
 
                 // Update N flag
-                self.or_flags(N_FLAG_BITMASK & self.ac);
+                self.update_n_flag_with(self.ac);
 
                 // Update Z flag with value from acc
-                // If result is zero, then mask = 11111111
-                let zero_mask = !(0 & self.ac);
-                self.or_flags(zero_mask & Z_FLAG_BITMASK);
+                self.update_z_flag_with(self.ac);
 
                 self.add_to_pc(instr_len);
                 Ok(())
@@ -241,6 +264,10 @@ where
 
     pub(crate) fn set_ac(&mut self, val: u8) {
         self.ac = val;
+    }
+
+    pub fn write_to_mem(&mut self, addr: u16, byte: u8) {
+        self.mem.write_byte(addr as usize, byte);
     }
 }
 impl<M> std::fmt::Display for Cpu<M>

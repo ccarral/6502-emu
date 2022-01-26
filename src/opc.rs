@@ -4,19 +4,19 @@ pub struct OpMode(pub Inst, pub AddressMode, pub u8);
 const OPS: [Option<OpMode>; 0x10] = [
     // 0x00
     Some(OpMode(Inst::Brk, AddressMode::Impl, 0)),
-    Some(OpMode(Inst::Ora, AddressMode::IndX, 0)),
+    Some(OpMode(Inst::Ora, AddressMode::IndX, 6)),
     None,
     None,
     None,
-    Some(OpMode(Inst::Ora, AddressMode::Zpg, 0)),
+    Some(OpMode(Inst::Ora, AddressMode::Zpg, 3)),
     Some(OpMode(Inst::Asl, AddressMode::Zpg, 0)),
     None,
     Some(OpMode(Inst::Php, AddressMode::Impl, 0)),
-    Some(OpMode(Inst::Ora, AddressMode::Imm, 0)),
+    Some(OpMode(Inst::Ora, AddressMode::Imm, 2)),
     Some(OpMode(Inst::Asl, AddressMode::Acc, 0)),
     None,
     None,
-    Some(OpMode(Inst::Ora, AddressMode::Abs, 0)),
+    Some(OpMode(Inst::Ora, AddressMode::Abs, 4)),
     Some(OpMode(Inst::Asl, AddressMode::Abs, 0)),
     None,
     // 0x10

@@ -19,3 +19,9 @@ pub fn new_cpu_with_asm(asm: &str) -> Result<Cpu<SimpleMemory>, String> {
     let cpu = Cpu::with_mem(mem);
     Ok(cpu)
 }
+
+pub fn new_cpu_empty_mem() -> Cpu<SimpleMemory> {
+    let mem = SimpleMemory::from_rom(&[]);
+    let cpu = Cpu::with_mem(mem);
+    cpu
+}
