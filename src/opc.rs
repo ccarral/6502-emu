@@ -84,7 +84,6 @@ pub enum Inst {
     Txa,
     Txs,
     Tya,
-    None,
 }
 
 #[derive(Copy, Clone)]
@@ -102,31 +101,9 @@ pub enum AddressMode {
     Zpg,
     ZpgX,
     ZpgY,
-    None,
-}
-
-impl AddressMode {
-    pub const fn expected_bytes(&self) -> usize {
-        match self {
-            AddressMode::Acc => 0,
-            AddressMode::Abs => 2,
-            AddressMode::AbsX => 2,
-            AddressMode::AbsY => 2,
-            AddressMode::Imm => 1,
-            AddressMode::Impl => 0,
-            AddressMode::Ind => 2,
-            AddressMode::IndX => 1,
-            AddressMode::IndY => 1,
-            AddressMode::Rel => 1,
-            AddressMode::Zpg => 1,
-            AddressMode::ZpgX => 1,
-            AddressMode::ZpgY => 1,
-            AddressMode::None => 0,
-        }
-    }
 }
 
 pub enum Operand {
-    One(u8),
-    Two(u8),
+    OneByte(u8),
+    TwoByte(u8),
 }
