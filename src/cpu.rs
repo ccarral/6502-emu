@@ -320,11 +320,12 @@ where
                 effective_addr
             }
             AddressMode::IndX => {
-                let bb = self.mem.read_byte(self.pc + 1);
-                // 0BB + X
+                let bb_addr = u16::wrapping_add(self.pc, 1);
+                let bb = self.mem.read_byte(bb_addr);
+                // 00BB + X no carry, no page boundary crossing
                 let ind_addr_ll = u8::wrapping_add(bb, self.x);
                 let ind_addr_ll_zpg = util::u8_to_u16(ind_addr_ll);
-                // 0BB + X + 1
+                // 00BB + X + 1 no carry, no page boundary crossing
                 let ind_addr_hh = u8::wrapping_add(ind_addr_ll, 1);
                 let ind_addr_hh_zpg = util::u8_to_u16(ind_addr_hh);
 

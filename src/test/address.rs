@@ -42,3 +42,15 @@ fn test_indirect_addressing() {
     let effective_addr = cpu.get_effective_address(&AddressMode::Ind);
     assert_eq!(effective_addr, 0xCC01);
 }
+
+#[test]
+fn test_indirect_x_indexed() {
+    let mut cpu = util::new_cpu_empty_mem();
+    cpu.set_pc(0x0600);
+    cpu.set_x(0x01);
+    cpu.write_to_mem(0x0601, 0x00);
+    cpu.write_to_mem(0x0001, 0x05);
+    cpu.write_to_mem(0x0002, 0x07);
+    let effective_addr = cpu.get_effective_address(&AddressMode::IndX);
+    assert_eq!(effective_addr, 0x0705);
+}
