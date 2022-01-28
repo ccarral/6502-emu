@@ -282,22 +282,28 @@ where
                 effective_addr
             }
             AddressMode::Abs => {
-                let ll = self.mem.read_byte(self.pc + 1);
-                let hh = self.mem.read_byte(self.pc + 2);
+                let ll_addr = u16::wrapping_add(self.pc, 1);
+                let hh_addr = u16::wrapping_add(self.pc, 2);
+                let ll = self.mem.read_byte(ll_addr);
+                let hh = self.mem.read_byte(hh_addr);
                 let effective_addr = util::combine_u8_to_u16(hh, ll);
                 effective_addr
             }
             AddressMode::AbsX => {
-                let ll = self.mem.read_byte(self.pc + 1);
-                let hh = self.mem.read_byte(self.pc + 2);
+                let ll_addr = u16::wrapping_add(self.pc, 1);
+                let hh_addr = u16::wrapping_add(self.pc, 2);
+                let ll = self.mem.read_byte(ll_addr);
+                let hh = self.mem.read_byte(hh_addr);
                 let base = util::combine_u8_to_u16(hh, ll);
                 let index = util::u8_to_u16(self.x);
                 let effective_addr = u16::wrapping_add(base, index);
                 effective_addr
             }
             AddressMode::AbsY => {
-                let ll = self.mem.read_byte(self.pc + 1);
-                let hh = self.mem.read_byte(self.pc + 2);
+                let ll_addr = u16::wrapping_add(self.pc, 1);
+                let hh_addr = u16::wrapping_add(self.pc, 2);
+                let ll = self.mem.read_byte(ll_addr);
+                let hh = self.mem.read_byte(hh_addr);
                 let base = util::combine_u8_to_u16(hh, ll);
                 let index = util::u8_to_u16(self.y);
                 let effective_addr = u16::wrapping_add(base, index);
@@ -306,13 +312,11 @@ where
             AddressMode::Ind => {
                 // NOTE: This mode doesn't cross page boundaries.
                 // If first byte of address is in $xxFF then second byte is in  $xx00
-                let ll = self.mem.read_byte(self.pc + 1);
-                let hh = self.mem.read_byte(self.pc + 2);
-                let addr_ll = util::combine_u8_to_u16(hh, ll);
-                let addr_hh = u16::wrapping_add(addr_ll, 1);
-                let effective_addr_ll = self.mem.read_byte(addr_ll);
-                let effective_addr_hh = self.mem.read_byte(addr_hh);
-                let effective_addr = util::combine_u8_to_u16(effective_addr_hh, effective_addr_ll);
+                let ll_addr = util::wrapping_add_same_page(self.pc, 1);
+                let hh_addr = util::wrapping_add_same_page(self.pc, 2);
+                let ll = self.mem.read_byte(dbg!(ll_addr));
+                let hh = self.mem.read_byte(dbg!(hh_addr));
+                let effective_addr = dbg!(util::combine_u8_to_u16(hh, ll));
                 effective_addr
             }
             AddressMode::IndX => {
