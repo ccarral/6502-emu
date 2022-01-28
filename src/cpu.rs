@@ -1,6 +1,6 @@
 use crate::error::Error6502;
 use crate::memory::Memory;
-use crate::opc::{self, AddressMode, Inst, OpMode};
+use crate::opc::{self, AddressMode, Inst, OpMode, Operand};
 use crate::util;
 
 pub struct Cpu<M> {
@@ -25,6 +25,11 @@ impl<M> Cpu<M>
 where
     M: Memory + Sized,
 {
+    /// Create a new CPU with memory `mem`.
+    ///
+    /// # Arguments
+    ///
+    /// * `mem` - Impl. of `Memory`
     pub fn with_mem(mem: M) -> Self {
         // Read PC from $FFFC and $FFFD
         let high = mem.read_byte(0xFFFC);
@@ -35,7 +40,7 @@ where
             ac: 0x00,
             x: 0x00,
             y: 0x00,
-            sr: 0x00,
+            sr: 0b00100000,
             sp: 0x00,
             mem,
             current_inst_cycles_left: 0,
@@ -118,6 +123,10 @@ where
         self.x = val;
     }
 
+    pub(crate) fn set_y(&mut self, val: u8) {
+        self.y = val;
+    }
+
     pub(crate) fn add_to_pc(&mut self, val: u16) {
         self.pc += val;
     }
@@ -128,6 +137,10 @@ where
 
     pub fn or_flags(&mut self, mask: u8) {
         self.sr |= mask;
+    }
+
+    pub fn reset_flags(&mut self) {
+        self.sr = 0b00100000;
     }
 
     pub fn n_flag(&self) -> bool {
@@ -202,45 +215,12 @@ where
             Inst::Lsr => todo!(),
             Inst::Nop => todo!(),
             Inst::Ora => {
-                let or_operand = match address_mode {
-                    AddressMode::Imm => {
-                        instr_len = 2;
-                        // Read one byte after pc
-                        self.mem.read_byte(self.pc + 1)
-                    }
-                    AddressMode::Zpg => {
-                        // Read Zero Page address $00LL
-                        let addr = self.mem.read_byte(self.pc + 1);
-                        instr_len = 2;
-                        self.mem.read_byte(addr as u16)
-                    }
-                    AddressMode::ZpgX => {
-                        // Read zero page address $00LL + X without carry
-                        let addr = self.mem.read_byte(self.pc + 1);
-                        // let effective_addr = addr + self.x;
-                        let effective_addr = u8::wrapping_add(addr, self.x);
-                        instr_len = 2;
-                        self.mem.read_byte(effective_addr as u16)
-                    }
-                    AddressMode::Abs => {
-                        let ll = self.mem.read_byte(self.pc + 1);
-                        let hh = self.mem.read_byte(self.pc + 2);
-                        let effective_addr = util::combine_u8_to_u16(hh, ll);
-                        instr_len = 3;
-                        self.mem.read_byte(effective_addr)
-                    }
-                    AddressMode::AbsX => {
-                        let ll = self.mem.read_byte(self.pc + 1);
-                        let hh = self.mem.read_byte(self.pc + 2);
-                        let effective_addr = util::combine_u8_to_u16(hh, ll) + self.x as u16;
-                        instr_len = 3;
-                        self.mem.read_byte(effective_addr)
-                    }
-                    AddressMode::AbsY => todo!(),
-                    AddressMode::IndX => todo!(),
-                    AddressMode::IndY => todo!(),
-                    _ => unreachable!(),
+                let or_operand: u8 = {
+                    let effective_addr = self.get_effective_address(&address_mode);
+                    self.mem.read_byte(effective_addr)
                 };
+
+                let instr_len = get_instr_len(&address_mode);
 
                 // or with acc
                 self.ac |= or_operand;
@@ -275,7 +255,6 @@ where
             Inst::Txa => todo!(),
             Inst::Txs => todo!(),
             Inst::Tya => todo!(),
-            Inst::None => todo!(),
         }
     }
 
@@ -285,6 +264,79 @@ where
 
     pub fn write_to_mem(&mut self, addr: u16, byte: u8) {
         self.mem.write_byte(addr as usize, byte);
+    }
+
+    pub(crate) fn get_effective_address(&self, address_mode: &AddressMode) -> u16 {
+        match address_mode {
+            AddressMode::Zpg => {
+                // Zero Page address 0LL
+                let addr = self.mem.read_byte(self.pc + 1);
+                let effective_addr = util::u8_to_u16(addr);
+                effective_addr
+            }
+            AddressMode::ZpgX => {
+                // Read zero page address 0LL + X without carry
+                let addr = self.mem.read_byte(self.pc + 1);
+                let effective_addr = u8::wrapping_add(addr, self.x);
+                let effective_addr = util::u8_to_u16(effective_addr);
+                effective_addr
+            }
+            AddressMode::Abs => {
+                let ll = self.mem.read_byte(self.pc + 1);
+                let hh = self.mem.read_byte(self.pc + 2);
+                let effective_addr = util::combine_u8_to_u16(hh, ll);
+                effective_addr
+            }
+            AddressMode::AbsX => {
+                let ll = self.mem.read_byte(self.pc + 1);
+                let hh = self.mem.read_byte(self.pc + 2);
+                let base = util::combine_u8_to_u16(hh, ll);
+                let index = util::u8_to_u16(self.x);
+                let effective_addr = u16::wrapping_add(base, index);
+                effective_addr
+            }
+            AddressMode::AbsY => {
+                let ll = self.mem.read_byte(self.pc + 1);
+                let hh = self.mem.read_byte(self.pc + 2);
+                let base = util::combine_u8_to_u16(hh, ll);
+                let index = util::u8_to_u16(self.y);
+                let effective_addr = u16::wrapping_add(base, index);
+                effective_addr
+            }
+            AddressMode::Ind => {
+                // NOTE: This mode doesn't cross page boundaries.
+                // If first byte of address is in $xxFF then second byte is in  $xx00
+                let ll = self.mem.read_byte(self.pc + 1);
+                let hh = self.mem.read_byte(self.pc + 2);
+                let addr_ll = util::combine_u8_to_u16(hh, ll);
+                let addr_hh = u16::wrapping_add(addr_ll, 1);
+                let effective_addr_ll = self.mem.read_byte(addr_ll);
+                let effective_addr_hh = self.mem.read_byte(addr_hh);
+                let effective_addr = util::combine_u8_to_u16(effective_addr_hh, effective_addr_ll);
+                effective_addr
+            }
+            AddressMode::IndX => {
+                let bb = self.mem.read_byte(self.pc + 1);
+                // 0BB + X
+                let ind_addr_ll = u8::wrapping_add(bb, self.x);
+                let ind_addr_ll_zpg = util::u8_to_u16(ind_addr_ll);
+                // 0BB + X + 1
+                let ind_addr_hh = u8::wrapping_add(ind_addr_ll, 1);
+                let ind_addr_hh_zpg = util::u8_to_u16(ind_addr_hh);
+
+                let ll = self.mem.read_byte(ind_addr_ll_zpg);
+                let hh = self.mem.read_byte(ind_addr_hh_zpg);
+
+                let effective_addr = util::combine_u8_to_u16(hh, ll);
+                effective_addr
+            }
+            AddressMode::IndY => todo!(),
+            AddressMode::Acc => todo!(),
+            AddressMode::Imm => todo!(),
+            AddressMode::Impl => todo!(),
+            AddressMode::Rel => todo!(),
+            AddressMode::ZpgY => todo!(),
+        }
     }
 }
 impl<M> std::fmt::Display for Cpu<M>
@@ -312,5 +364,23 @@ where
             self.ac,
             self.sr
         ))
+    }
+}
+
+const fn get_instr_len(addr_mode: &AddressMode) -> u16 {
+    match addr_mode {
+        AddressMode::Acc => 1,
+        AddressMode::Abs => 3,
+        AddressMode::AbsX => 3,
+        AddressMode::AbsY => 3,
+        AddressMode::Imm => 2,
+        AddressMode::Impl => 1,
+        AddressMode::Ind => 3,
+        AddressMode::IndX => 2,
+        AddressMode::IndY => 2,
+        AddressMode::Rel => 2,
+        AddressMode::Zpg => 2,
+        AddressMode::ZpgX => 2,
+        AddressMode::ZpgY => 2,
     }
 }

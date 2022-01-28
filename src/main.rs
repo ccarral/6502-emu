@@ -2,11 +2,9 @@ mod cpu;
 mod error;
 mod memory;
 mod opc;
-#[cfg(test)]
 mod test;
 mod util;
 fn main() {
-    // Read pc from $FFFC and $FFFD
     use crate::cpu::Cpu;
     use crate::memory::SimpleMemory;
 
