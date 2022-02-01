@@ -82,3 +82,32 @@ fn test_relative_addressing() {
     // 0x0600 + 0xE2 (-30) = 0x05E2
     assert_eq!(target_addr, 0x05E2);
 }
+
+#[test]
+fn test_zpg_addressing() {
+    let mut cpu = util::new_cpu_empty_mem();
+    cpu.set_pc(0x0600);
+    cpu.write_to_mem(0x0601, 0x18);
+    let target_addr = cpu.get_effective_address(&AddressMode::Zpg);
+    assert_eq!(target_addr, 0x0018);
+}
+
+#[test]
+fn test_zpg_x_indexed_addressing() {
+    let mut cpu = util::new_cpu_empty_mem();
+    cpu.set_pc(0x0600);
+    cpu.set_x(0x11);
+    cpu.write_to_mem(0x0601, 0x18);
+    let target_addr = cpu.get_effective_address(&AddressMode::ZpgX);
+    assert_eq!(target_addr, 0x0029);
+}
+
+#[test]
+fn test_zpg_y_indexed_addressing() {
+    let mut cpu = util::new_cpu_empty_mem();
+    cpu.set_pc(0x0600);
+    cpu.set_y(0x11);
+    cpu.write_to_mem(0x0601, 0x18);
+    let target_addr = cpu.get_effective_address(&AddressMode::ZpgY);
+    assert_eq!(target_addr, 0x0029);
+}
