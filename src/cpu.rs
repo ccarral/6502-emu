@@ -335,7 +335,17 @@ where
                 let effective_addr = util::combine_u8_to_u16(hh, ll);
                 effective_addr
             }
-            AddressMode::IndY => todo!(),
+            AddressMode::IndY => {
+                let ll_addr = u16::wrapping_add(self.pc, 1);
+                let ll = self.mem.read_byte(ll_addr);
+
+                let hh_addr = u16::wrapping_add(ll_addr, 1);
+                let hh = self.mem.read_byte(hh_addr);
+
+                let effective_addr = util::combine_u8_to_u16(hh, ll);
+                let effective_addr = util::wrapping_add_same_page(effective_addr, self.y);
+                effective_addr
+            }
             AddressMode::Acc => todo!(),
             AddressMode::Imm => todo!(),
             AddressMode::Impl => todo!(),
