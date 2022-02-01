@@ -314,9 +314,9 @@ where
                 // If first byte of address is in $xxFF then second byte is in  $xx00
                 let ll_addr = util::wrapping_add_same_page(self.pc, 1);
                 let hh_addr = util::wrapping_add_same_page(self.pc, 2);
-                let ll = self.mem.read_byte(dbg!(ll_addr));
-                let hh = self.mem.read_byte(dbg!(hh_addr));
-                let effective_addr = dbg!(util::combine_u8_to_u16(hh, ll));
+                let ll = self.mem.read_byte(ll_addr);
+                let hh = self.mem.read_byte(hh_addr);
+                let effective_addr = util::combine_u8_to_u16(hh, ll);
                 effective_addr
             }
             AddressMode::IndX => {
@@ -349,7 +349,21 @@ where
             AddressMode::Acc => todo!(),
             AddressMode::Imm => todo!(),
             AddressMode::Impl => todo!(),
-            AddressMode::Rel => todo!(),
+            AddressMode::Rel => {
+                // Get 8 bit 2's complement encoded signed offset
+                let bb_addr = u16::wrapping_add(self.pc, 1);
+                let offset = self.mem.read_byte(bb_addr);
+                let offset_16 = {
+                    if offset & 0b10000000 != 0 {
+                        // Number is negative, extend with 0xFF
+                        util::combine_u8_to_u16(0xFF, offset)
+                    } else {
+                        util::combine_u8_to_u16(0x00, offset)
+                    }
+                };
+                let target_addr = u16::wrapping_add(offset_16, self.pc);
+                target_addr
+            }
             AddressMode::ZpgY => todo!(),
         }
     }

@@ -1,7 +1,7 @@
 use crate::opc::{AddressMode, Inst};
 use crate::util::*;
 
-#[test]
+// #[test]
 pub fn test_ora() {
     let mut cpu = new_cpu_empty_mem();
     cpu.set_ac(0x00);
