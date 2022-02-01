@@ -109,6 +109,19 @@ where
         }
     }
 
+    /// Checks if the sum of the two values overflows, updates the carry flag accordingly and
+    /// returns the (wrapped) sum of the values
+    pub fn update_c_flag_with(&mut self, b1: u8, b2: u8) -> u8 {
+        // TODO: Possibly only take one argument and test with acc register?
+        let (result, overflow) = dbg!(u8::overflowing_add(b1, b2));
+        if overflow {
+            self.sr |= C_FLAG_BITMASK;
+        } else {
+            self.sr &= !C_FLAG_BITMASK;
+        }
+        result
+    }
+
     /// Convert u16 pc to usize so it can be used to address memory
     pub fn pc_usize(&self) -> usize {
         // Mask pc to u16::MAX
@@ -268,6 +281,11 @@ where
 
     pub(crate) fn get_effective_address(&self, address_mode: &AddressMode) -> u16 {
         match address_mode {
+            // As accumulator, immediate and implied addressing modes are 1 byte length operators,
+            // implementors of opcodes must check for these modes before calling this function.
+            AddressMode::Acc => unreachable!(),
+            AddressMode::Imm => unreachable!(),
+            AddressMode::Impl => unreachable!(),
             AddressMode::Zpg => {
                 // Zero Page address 0LL
                 let addr = self.mem.read_byte(self.pc + 1);
@@ -353,9 +371,6 @@ where
                 let effective_addr = util::wrapping_add_same_page(effective_addr, self.y);
                 effective_addr
             }
-            AddressMode::Acc => todo!(),
-            AddressMode::Imm => todo!(),
-            AddressMode::Impl => todo!(),
             AddressMode::Rel => {
                 // Get 8 bit 2's complement encoded signed offset
                 let bb_addr = u16::wrapping_add(self.pc, 1);

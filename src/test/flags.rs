@@ -15,3 +15,12 @@ pub fn test_n_flag() {
     assert!(cpu.n_flag());
     assert!(!cpu.z_flag());
 }
+
+#[test]
+pub fn test_c_flag() {
+    let mut cpu = new_cpu_empty_mem();
+    cpu.update_c_flag_with(u8::MAX, 1);
+    assert!(cpu.c_flag());
+    cpu.update_c_flag_with(u8::MAX - 1, 1);
+    assert!(!cpu.c_flag());
+}
