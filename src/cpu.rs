@@ -9,7 +9,7 @@ pub struct Cpu<M> {
     x: u8,
     y: u8,
     sr: u8,
-    sp: u8,
+    sp: u16,
     mem: M,
     current_inst_cycles_left: u8,
 }
@@ -21,6 +21,7 @@ const I_FLAG_BITMASK: u8 = 0b00000100;
 const Z_FLAG_BITMASK: u8 = 0b00000010;
 const C_FLAG_BITMASK: u8 = 0b00000001;
 const FLAGS_DEFAULT: u8 = 0b00100000;
+const STACK_ADDR_DEFAULT: u16 = 0x01FF;
 
 impl<M> Cpu<M>
 where
@@ -42,7 +43,7 @@ where
             x: 0x00,
             y: 0x00,
             sr: FLAGS_DEFAULT,
-            sp: 0x00,
+            sp: STACK_ADDR_DEFAULT,
             mem,
             current_inst_cycles_left: 0,
         }
@@ -81,6 +82,18 @@ where
 
     pub fn exit(&self) -> bool {
         false
+    }
+
+    pub(crate) fn stack_push(&mut self, bb: u8) {
+        self.mem.write_byte(self.sp, bb);
+        dbg!(self.sp);
+        self.sp -= 1;
+    }
+
+    pub(crate) fn stack_pop(&mut self) -> u8 {
+        self.sp += 1;
+        dbg!(self.sp);
+        self.mem.read_byte(self.sp)
     }
 
     /// Checks if value is Zero and updates Z flag accordingly
@@ -297,7 +310,7 @@ where
     }
 
     pub fn write_to_mem(&mut self, addr: u16, byte: u8) {
-        self.mem.write_byte(addr as usize, byte);
+        self.mem.write_byte(addr, byte);
     }
 
     pub(crate) fn get_effective_address(&self, address_mode: &AddressMode) -> u16 {
