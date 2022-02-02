@@ -87,7 +87,7 @@ where
     /// # Arguments
     ///
     /// * `val` - value to be checked
-    pub fn update_z_flag_with(&mut self, val: u8) {
+    pub(crate) fn update_z_flag_with(&mut self, val: u8) {
         if val == 0x00 {
             self.sr |= Z_FLAG_BITMASK;
         } else {
@@ -100,7 +100,7 @@ where
     /// # Arguments
     ///
     /// * `val` - value to be checked
-    pub fn update_n_flag_with(&mut self, val: u8) {
+    pub(crate) fn update_n_flag_with(&mut self, val: u8) {
         const NEG_BITMASK: u8 = 0b10000000;
         if val & NEG_BITMASK == NEG_BITMASK {
             self.sr |= N_FLAG_BITMASK;
@@ -111,15 +111,34 @@ where
 
     /// Checks if the sum of the two values overflows, updates the carry flag accordingly and
     /// returns the (wrapped) sum of the values
-    pub fn update_c_flag_with(&mut self, b1: u8, b2: u8) -> u8 {
+    pub(crate) fn update_c_flag_with(&mut self, b1: u8, b2: u8) -> u8 {
         // TODO: Possibly only take one argument and test with acc register?
-        let (result, overflow) = dbg!(u8::overflowing_add(b1, b2));
-        if overflow {
+        let (result, carry) = dbg!(u8::overflowing_add(b1, b2));
+        if carry {
             self.sr |= C_FLAG_BITMASK;
         } else {
             self.sr &= !C_FLAG_BITMASK;
         }
         result
+    }
+
+    pub(crate) fn update_v_flag_with(&mut self, b1: u8, b2: u8) {
+        const BIT_7_MASK: u8 = 0b10000000;
+        // Check if there is carry from bit 6 into bit 7 by turning off bit 7 on both operands and
+        // adding them
+        let bit_7_carry_in = ((b1 & !BIT_7_MASK) + (b2 & !BIT_7_MASK)) & BIT_7_MASK != 0;
+
+        // Check if theres a carry out from bit 7
+        let (_res, bit_7_carry_out) = u8::overflowing_add(b1, b2);
+
+        // xor carry in and carry out from bit 7
+        let set_flag = bit_7_carry_in ^ bit_7_carry_out;
+
+        if set_flag {
+            self.sr |= V_FLAG_BITMASK;
+        } else {
+            self.sr &= !V_FLAG_BITMASK;
+        }
     }
 
     /// Convert u16 pc to usize so it can be used to address memory
