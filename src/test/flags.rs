@@ -34,8 +34,9 @@ pub fn test_v_flag() {
 
     cpu.reset_flags();
     // (-1) + (-1) = -2 which is correct, so no flag
-    cpu.update_v_flag_with(0b11111111, 0b11111111);
+    let res: i8 = cpu.update_v_flag_with(0b11111111, 0b11111111) as i8;
     assert!(!cpu.v_flag());
+    assert_eq!(res, -2);
 
     cpu.reset_flags();
     // (-64) + (-65) = +127 in two's complement logic, which is an overflow error

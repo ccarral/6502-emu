@@ -122,14 +122,14 @@ where
         result
     }
 
-    pub(crate) fn update_v_flag_with(&mut self, b1: u8, b2: u8) {
+    pub(crate) fn update_v_flag_with(&mut self, b1: u8, b2: u8) -> u8 {
         const BIT_7_MASK: u8 = 0b10000000;
         // Check if there is carry from bit 6 into bit 7 by turning off bit 7 on both operands and
         // adding them
         let bit_7_carry_in = ((b1 & !BIT_7_MASK) + (b2 & !BIT_7_MASK)) & BIT_7_MASK != 0;
 
         // Check if theres a carry out from bit 7
-        let (_res, bit_7_carry_out) = u8::overflowing_add(b1, b2);
+        let (res, bit_7_carry_out) = u8::overflowing_add(b1, b2);
 
         // xor carry in and carry out from bit 7
         let set_flag = bit_7_carry_in ^ bit_7_carry_out;
@@ -139,6 +139,7 @@ where
         } else {
             self.sr &= !V_FLAG_BITMASK;
         }
+        res
     }
 
     /// Convert u16 pc to usize so it can be used to address memory
