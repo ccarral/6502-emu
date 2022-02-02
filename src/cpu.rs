@@ -20,6 +20,7 @@ const D_FLAG_BITMASK: u8 = 0b00001000;
 const I_FLAG_BITMASK: u8 = 0b00000100;
 const Z_FLAG_BITMASK: u8 = 0b00000010;
 const C_FLAG_BITMASK: u8 = 0b00000001;
+const FLAGS_DEFAULT: u8 = 0b00100000;
 
 impl<M> Cpu<M>
 where
@@ -40,7 +41,7 @@ where
             ac: 0x00,
             x: 0x00,
             y: 0x00,
-            sr: 0b00100000,
+            sr: FLAGS_DEFAULT,
             sp: 0x00,
             mem,
             current_inst_cycles_left: 0,
@@ -173,7 +174,7 @@ where
     }
 
     pub fn reset_flags(&mut self) {
-        self.sr = 0b00100000;
+        self.sr = FLAGS_DEFAULT;
     }
 
     pub fn n_flag(&self) -> bool {
