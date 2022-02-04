@@ -1,18 +1,8 @@
 use crate::error::Error6502;
 use crate::memory::Memory;
-use crate::opc::{self, AddressMode, Inst, OpMode, Operand};
+use crate::opc::{self, AddressMode, Inst, OpMode};
 use crate::util;
 
-pub struct Cpu<M> {
-    pc: u16,
-    ac: u8,
-    x: u8,
-    y: u8,
-    sr: u8,
-    sp: u16,
-    mem: M,
-    current_inst_cycles_left: u8,
-}
 const N_FLAG_BITMASK: u8 = 0b10000000;
 const V_FLAG_BITMASK: u8 = 0b01000000;
 const B_FLAG_BITMASK: u8 = 0b00010000;
@@ -22,6 +12,18 @@ const Z_FLAG_BITMASK: u8 = 0b00000010;
 const C_FLAG_BITMASK: u8 = 0b00000001;
 const FLAGS_DEFAULT: u8 = 0b00100000;
 const STACK_ADDR_DEFAULT: u16 = 0x01FF;
+const MAX_INST_CYCLES: u8 = 6;
+
+pub struct Cpu<M> {
+    pc: u16,
+    ac: u8,
+    x: u8,
+    y: u8,
+    sr: u8,
+    sp: u16,
+    mem: M,
+    cycle_count: u8,
+}
 
 impl<M> Cpu<M>
 where
@@ -45,7 +47,7 @@ where
             sr: FLAGS_DEFAULT,
             sp: STACK_ADDR_DEFAULT,
             mem,
-            current_inst_cycles_left: 0,
+            cycle_count: 0,
         }
     }
 
@@ -62,21 +64,9 @@ where
     /// Fails whenever fetching the next (valid) instruction fails.
     pub fn run(mut self, callable: &mut dyn FnMut(&Cpu<M>)) -> Result<(), Error6502> {
         while !self.exit() {
-            self.step()?;
             callable(&self);
         }
 
-        Ok(())
-    }
-
-    pub fn step(&mut self) -> Result<(), Error6502> {
-        if self.current_inst_cycles_left > 0 {
-            self.current_inst_cycles_left -= 1
-        } else {
-            let OpMode(inst, addr_mode, cycles) = self.fetch_next_inst()?;
-            self.execute_inst(inst, addr_mode)?;
-            self.current_inst_cycles_left = cycles - 1;
-        }
         Ok(())
     }
 
@@ -116,7 +106,7 @@ where
     /// * `val` - value to be checked
     pub(crate) fn update_n_flag_with(&mut self, val: u8) {
         const NEG_BITMASK: u8 = 0b10000000;
-        if val & NEG_BITMASK == NEG_BITMASK {
+        if val & NEG_BITMASK != 0 {
             self.sr |= N_FLAG_BITMASK;
         } else {
             self.sr &= !N_FLAG_BITMASK;
@@ -125,35 +115,29 @@ where
 
     /// Checks if the sum of the two values overflows, updates the carry flag accordingly and
     /// returns the (wrapped) sum of the values
-    pub(crate) fn update_c_flag_with(&mut self, b1: u8, b2: u8) -> u8 {
+    pub(crate) fn write_c_flag(&mut self, carry: bool) {
         // TODO: Possibly only take one argument and test with acc register?
-        let (result, carry) = dbg!(u8::overflowing_add(b1, b2));
         if carry {
             self.sr |= C_FLAG_BITMASK;
         } else {
             self.sr &= !C_FLAG_BITMASK;
         }
-        result
     }
 
-    pub(crate) fn update_v_flag_with(&mut self, b1: u8, b2: u8) -> u8 {
-        const BIT_7_MASK: u8 = 0b10000000;
-        // Check if there is carry from bit 6 into bit 7 by turning off bit 7 on both operands and
-        // adding them
-        let bit_7_carry_in = ((b1 & !BIT_7_MASK) + (b2 & !BIT_7_MASK)) & BIT_7_MASK != 0;
-
-        // Check if theres a carry out from bit 7
-        let (res, bit_7_carry_out) = u8::overflowing_add(b1, b2);
-
-        // xor carry in and carry out from bit 7
-        let set_flag = bit_7_carry_in ^ bit_7_carry_out;
-
-        if set_flag {
+    pub(crate) fn write_v_flag(&mut self, overflow: bool) {
+        if overflow {
             self.sr |= V_FLAG_BITMASK;
         } else {
             self.sr &= !V_FLAG_BITMASK;
         }
-        res
+    }
+
+    pub fn set_d_flag(&mut self, value: bool) {
+        if value {
+            self.sr |= D_FLAG_BITMASK;
+        } else {
+            self.sr &= !D_FLAG_BITMASK;
+        }
     }
 
     /// Convert u16 pc to usize so it can be used to address memory
@@ -212,7 +196,6 @@ where
         (self.sr & C_FLAG_BITMASK) != 0
     }
 
-    #[inline]
     pub(crate) fn fetch_next_inst(&self) -> Result<OpMode, Error6502> {
         // Read byte at pc
         let byte = self.mem.read_byte(self.pc);
@@ -222,87 +205,44 @@ where
         }
     }
 
-    #[inline]
-    pub fn execute_inst(&mut self, inst: Inst, address_mode: AddressMode) -> Result<(), Error6502> {
+    pub fn step_inst(&mut self, inst: Inst, address_mode: AddressMode) -> Result<(), Error6502> {
         // Should "panic" if the program is not well formed
-        let mut instr_len = 0u16;
         match inst {
-            Inst::Adc => todo!(),
-            Inst::And => todo!(),
-            Inst::Asl => todo!(),
-            Inst::Bcc => todo!(),
-            Inst::Bcs => todo!(),
-            Inst::Beq => todo!(),
-            Inst::Bit => todo!(),
-            Inst::Bmi => todo!(),
-            Inst::Bne => todo!(),
-            Inst::Bpl => todo!(),
-            Inst::Brk => todo!(),
-            Inst::Bvc => todo!(),
-            Inst::Bvs => todo!(),
-            Inst::Clc => todo!(),
-            Inst::Cld => todo!(),
-            Inst::Cli => todo!(),
-            Inst::Clv => todo!(),
-            Inst::Cmp => todo!(),
-            Inst::Cpx => todo!(),
-            Inst::Cpy => todo!(),
-            Inst::Dec => todo!(),
-            Inst::Dex => todo!(),
-            Inst::Dey => todo!(),
-            Inst::Eor => todo!(),
-            Inst::Inc => todo!(),
-            Inst::Inx => todo!(),
-            Inst::Iny => todo!(),
-            Inst::Jmp => todo!(),
-            Inst::Jsr => todo!(),
-            Inst::Lda => todo!(),
-            Inst::Ldx => todo!(),
-            Inst::Ldy => todo!(),
-            Inst::Lsr => todo!(),
-            Inst::Nop => todo!(),
-            Inst::Ora => {
-                let or_operand: u8 = {
-                    let effective_addr = self.get_effective_address(&address_mode);
-                    self.mem.read_byte(effective_addr)
+            Inst::ADC => {
+                let operand = {
+                    match address_mode {
+                        AddressMode::IMM => {
+                            // Read immediate byte
+                            self.read_immediate_byte()
+                        }
+                        _ => {
+                            let effective_addr = self.get_effective_address(&address_mode);
+                            self.mem.read_byte(effective_addr)
+                        }
+                    }
                 };
 
-                let instr_len = get_instr_len(&address_mode);
+                let result = if self.d_flag() {
+                    // Operate in bcd mode
+                    0
+                } else {
+                    let (result, carry) = u8::overflowing_add(self.ac, operand);
+                    self.write_c_flag(carry);
+                    // self.write_v_flag(self.ac, operand);
+                    result
+                };
 
-                // or with acc
-                self.ac |= or_operand;
-
-                // Update N flag
-                self.update_n_flag_with(self.ac);
-
-                // Update Z flag with value from acc
-                self.update_z_flag_with(self.ac);
-
-                self.add_to_pc(instr_len);
-                Ok(())
+                self.update_z_flag_with(result);
+                self.update_n_flag_with(result);
+                self.ac = result;
             }
-            Inst::Pha => todo!(),
-            Inst::Php => todo!(),
-            Inst::Pla => todo!(),
-            Inst::Plp => todo!(),
-            Inst::Rol => todo!(),
-            Inst::Ror => todo!(),
-            Inst::Rti => todo!(),
-            Inst::Rts => todo!(),
-            Inst::Sbc => todo!(),
-            Inst::Sec => todo!(),
-            Inst::Sed => todo!(),
-            Inst::Sei => todo!(),
-            Inst::Sta => todo!(),
-            Inst::Stx => todo!(),
-            Inst::Sty => todo!(),
-            Inst::Tax => todo!(),
-            Inst::Tay => todo!(),
-            Inst::Tsx => todo!(),
-            Inst::Txa => todo!(),
-            Inst::Txs => todo!(),
-            Inst::Tya => todo!(),
+            _ => unimplemented!(),
         }
+
+        let instr_len = get_instr_len(&address_mode);
+        self.pc += instr_len;
+
+        Ok(())
     }
 
     pub(crate) fn set_ac(&mut self, val: u8) {
@@ -313,34 +253,38 @@ where
         self.mem.write_byte(addr, byte);
     }
 
+    pub(crate) fn read_immediate_byte(&self) -> u8 {
+        self.mem.read_byte(self.pc + 1)
+    }
+
     pub(crate) fn get_effective_address(&self, address_mode: &AddressMode) -> u16 {
         match address_mode {
             // As accumulator, immediate and implied addressing modes are 1 byte length operators,
             // implementors of opcodes must check for these modes before calling this function.
-            AddressMode::Acc => unreachable!(),
-            AddressMode::Imm => unreachable!(),
-            AddressMode::Impl => unreachable!(),
-            AddressMode::Zpg => {
+            AddressMode::ACC => unreachable!(),
+            AddressMode::IMM => unreachable!(),
+            AddressMode::IMPL => unreachable!(),
+            AddressMode::ZPG => {
                 // Zero Page address 0LL
                 let addr = self.mem.read_byte(self.pc + 1);
                 let effective_addr = util::u8_to_u16(addr);
                 effective_addr
             }
-            AddressMode::ZpgX => {
+            AddressMode::ZPGX => {
                 // Read zero page address 0LL + X without carry
                 let addr = self.mem.read_byte(self.pc + 1);
                 let effective_addr = u8::wrapping_add(addr, self.x);
                 let effective_addr = util::u8_to_u16(effective_addr);
                 effective_addr
             }
-            AddressMode::ZpgY => {
+            AddressMode::ZPGY => {
                 // Read zero page address 0LL + Y without carry
                 let addr = self.mem.read_byte(self.pc + 1);
                 let effective_addr = u8::wrapping_add(addr, self.y);
                 let effective_addr = util::u8_to_u16(effective_addr);
                 effective_addr
             }
-            AddressMode::Abs => {
+            AddressMode::ABS => {
                 let ll_addr = u16::wrapping_add(self.pc, 1);
                 let hh_addr = u16::wrapping_add(self.pc, 2);
                 let ll = self.mem.read_byte(ll_addr);
@@ -348,7 +292,7 @@ where
                 let effective_addr = util::combine_u8_to_u16(hh, ll);
                 effective_addr
             }
-            AddressMode::AbsX => {
+            AddressMode::ABSX => {
                 let ll_addr = u16::wrapping_add(self.pc, 1);
                 let hh_addr = u16::wrapping_add(self.pc, 2);
                 let ll = self.mem.read_byte(ll_addr);
@@ -358,7 +302,7 @@ where
                 let effective_addr = u16::wrapping_add(base, index);
                 effective_addr
             }
-            AddressMode::AbsY => {
+            AddressMode::ABSY => {
                 let ll_addr = u16::wrapping_add(self.pc, 1);
                 let hh_addr = u16::wrapping_add(self.pc, 2);
                 let ll = self.mem.read_byte(ll_addr);
@@ -368,7 +312,7 @@ where
                 let effective_addr = u16::wrapping_add(base, index);
                 effective_addr
             }
-            AddressMode::Ind => {
+            AddressMode::IND => {
                 // NOTE: This mode doesn't cross page boundaries.
                 // If first byte of address is in $xxFF then second byte is in  $xx00
                 let ll_addr = util::wrapping_add_same_page(self.pc, 1);
@@ -378,7 +322,7 @@ where
                 let effective_addr = util::combine_u8_to_u16(hh, ll);
                 effective_addr
             }
-            AddressMode::IndX => {
+            AddressMode::INDX => {
                 let bb_addr = u16::wrapping_add(self.pc, 1);
                 let bb = self.mem.read_byte(bb_addr);
                 // 00BB + X no carry, no page boundary crossing
@@ -394,7 +338,7 @@ where
                 let effective_addr = util::combine_u8_to_u16(hh, ll);
                 effective_addr
             }
-            AddressMode::IndY => {
+            AddressMode::INDY => {
                 let ll_addr = u16::wrapping_add(self.pc, 1);
                 let ll = self.mem.read_byte(ll_addr);
 
@@ -405,7 +349,7 @@ where
                 let effective_addr = util::wrapping_add_same_page(effective_addr, self.y);
                 effective_addr
             }
-            AddressMode::Rel => {
+            AddressMode::REL => {
                 // Get 8 bit 2's complement encoded signed offset
                 let bb_addr = u16::wrapping_add(self.pc, 1);
                 let offset = self.mem.read_byte(bb_addr);
@@ -453,18 +397,18 @@ where
 
 const fn get_instr_len(addr_mode: &AddressMode) -> u16 {
     match addr_mode {
-        AddressMode::Acc => 1,
-        AddressMode::Abs => 3,
-        AddressMode::AbsX => 3,
-        AddressMode::AbsY => 3,
-        AddressMode::Imm => 2,
-        AddressMode::Impl => 1,
-        AddressMode::Ind => 3,
-        AddressMode::IndX => 2,
-        AddressMode::IndY => 2,
-        AddressMode::Rel => 2,
-        AddressMode::Zpg => 2,
-        AddressMode::ZpgX => 2,
-        AddressMode::ZpgY => 2,
+        AddressMode::ACC => 1,
+        AddressMode::ABS => 3,
+        AddressMode::ABSX => 3,
+        AddressMode::ABSY => 3,
+        AddressMode::IMM => 2,
+        AddressMode::IMPL => 1,
+        AddressMode::IND => 3,
+        AddressMode::INDX => 2,
+        AddressMode::INDY => 2,
+        AddressMode::REL => 2,
+        AddressMode::ZPGX => 2,
+        AddressMode::ZPGY => 2,
+        AddressMode::ZPG => 2,
     }
 }

@@ -34,6 +34,24 @@ pub const fn wrapping_add_same_page(addr: u16, displacement: u8) -> u16 {
     new_addr
 }
 
+pub const fn test_negative(val: u8) -> bool {
+    const NEG_BITMASK: u8 = 0b10000000;
+    val & NEG_BITMASK != 0
+}
+
+pub const fn test_overflow(b1: u8, b2: u8) -> bool {
+    const BIT_7_MASK: u8 = 0b10000000;
+    // Check if there is carry from bit 6 into bit 7 by turning off bit 7 on both operands and
+    // adding them
+    let bit_7_carry_in = ((b1 & !BIT_7_MASK) + (b2 & !BIT_7_MASK)) & BIT_7_MASK != 0;
+
+    // Check if theres a carry out from bit 7
+    let (_res, bit_7_carry_out) = u8::overflowing_add(b1, b2);
+
+    // xor carry in and carry out from bit 7
+    bit_7_carry_in ^ bit_7_carry_out
+}
+
 pub fn new_mem_with_asm(asm: &str) -> Result<SimpleMemory, String> {
     let mut bin = Vec::new();
     assemble(asm.as_bytes(), &mut bin)?;
@@ -54,6 +72,8 @@ pub fn new_cpu_empty_mem() -> Cpu<SimpleMemory> {
 
 #[cfg(test)]
 mod test {
+    use crate::util;
+
     #[test]
     fn test_wrapping_add_same_page() {
         let addr = 0x12FF;
@@ -68,5 +88,15 @@ mod test {
         let ll = 0x45;
         let hhll = super::combine_u8_to_u16(hh, ll);
         assert_eq!(hhll, 0x9045);
+    }
+
+    #[test]
+    fn test_overflow() {
+        // (+64) + (+65) = -127 in two's complement logic, which is an overflow error
+        assert!(util::test_overflow(0b01000000, 0b01000001));
+        // (-1) + (-1) = -2 which is correct, so no flag
+        assert!(!util::test_overflow(0b11111111, 0b11111111));
+        // (-64) + (-65) = +127 in two's complement logic, which is an overflow error
+        assert!(util::test_overflow(0b11000000, 0b10111111));
     }
 }

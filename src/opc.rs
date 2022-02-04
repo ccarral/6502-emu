@@ -3,21 +3,21 @@ pub struct OpMode(pub Inst, pub AddressMode, pub u8);
 
 const OPS: [Option<OpMode>; 0x10] = [
     // 0x00
-    Some(OpMode(Inst::Brk, AddressMode::Impl, 0)),
-    Some(OpMode(Inst::Ora, AddressMode::IndX, 6)),
+    Some(OpMode(Inst::Brk, AddressMode::IMPL, 0)),
+    Some(OpMode(Inst::Ora, AddressMode::INDX, 6)),
     None,
     None,
     None,
-    Some(OpMode(Inst::Ora, AddressMode::Zpg, 3)),
-    Some(OpMode(Inst::Asl, AddressMode::Zpg, 0)),
+    Some(OpMode(Inst::Ora, AddressMode::ZPG, 3)),
+    Some(OpMode(Inst::Asl, AddressMode::ZPG, 0)),
     None,
-    Some(OpMode(Inst::Php, AddressMode::Impl, 0)),
-    Some(OpMode(Inst::Ora, AddressMode::Imm, 2)),
-    Some(OpMode(Inst::Asl, AddressMode::Acc, 0)),
+    Some(OpMode(Inst::Php, AddressMode::IMPL, 0)),
+    Some(OpMode(Inst::Ora, AddressMode::IMM, 2)),
+    Some(OpMode(Inst::Asl, AddressMode::ACC, 0)),
     None,
     None,
-    Some(OpMode(Inst::Ora, AddressMode::Abs, 4)),
-    Some(OpMode(Inst::Asl, AddressMode::Abs, 0)),
+    Some(OpMode(Inst::Ora, AddressMode::ABS, 4)),
+    Some(OpMode(Inst::Asl, AddressMode::ABS, 0)),
     None,
     // 0x10
 ];
@@ -28,7 +28,7 @@ pub const fn get_op_mode(opc: u8) -> Option<OpMode> {
 
 #[derive(Copy, Clone)]
 pub enum Inst {
-    Adc,
+    ADC,
     And,
     Asl,
     Bcc,
@@ -88,22 +88,17 @@ pub enum Inst {
 
 #[derive(Copy, Clone)]
 pub enum AddressMode {
-    Acc,
-    Abs,
-    AbsX,
-    AbsY,
-    Imm,
-    Impl,
-    Ind,
-    IndX,
-    IndY,
-    Rel,
-    Zpg,
-    ZpgX,
-    ZpgY,
-}
-
-pub enum Operand {
-    OneByte(u8),
-    TwoByte(u8),
+    ACC,
+    ABS,
+    ABSX,
+    ABSY,
+    IMM,
+    IMPL,
+    IND,
+    INDX,
+    INDY,
+    REL,
+    ZPG,
+    ZPGX,
+    ZPGY,
 }
