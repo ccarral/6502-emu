@@ -245,7 +245,7 @@ where
                 self.update_n_flag_with(result);
                 self.ac = result;
             }
-            Inst::And => {
+            Inst::AND => {
                 let operand = {
                     match address_mode {
                         AddressMode::IMM => {

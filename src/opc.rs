@@ -29,7 +29,7 @@ pub const fn get_op_mode(opc: u8) -> Option<OpMode> {
 #[derive(Copy, Clone)]
 pub enum Inst {
     ADC,
-    And,
+    AND,
     Asl,
     Bcc,
     Bcs,

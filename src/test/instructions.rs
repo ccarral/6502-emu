@@ -37,6 +37,6 @@ pub fn test_and() {
     cpu.write_to_mem(0x0001, 0x56);
     cpu.write_to_mem(0x0002, 0x44);
     cpu.write_to_mem(0x4456, 0x48);
-    cpu.step_inst(Inst::And, AddressMode::ABS).unwrap();
+    cpu.step_inst(Inst::AND, AddressMode::ABS).unwrap();
     assert_eq!(cpu.ac(), 0x48);
 }
