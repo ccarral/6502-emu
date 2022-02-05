@@ -1,3 +1,4 @@
+mod bcd;
 mod cpu;
 mod error;
 mod memory;

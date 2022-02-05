@@ -3,11 +3,13 @@ use crate::memory::SimpleMemory;
 use asm6502::assemble;
 
 /// Combine bytes 0xHH and 0xLL into 0xHHLL
+#[inline]
 pub const fn combine_u8_to_u16(hh: u8, ll: u8) -> u16 {
     u16::from_be_bytes([hh, ll])
 }
 
 /// Pad a single byte 0xBB into an u16 0x00BB
+#[inline]
 pub const fn u8_to_u16(val: u8) -> u16 {
     val as u16
 }
@@ -27,6 +29,7 @@ pub const fn u8_to_u16(val: u8) -> u16 {
 /// let new_addr = wrapping_add_same_page(addr, displ);
 /// assert_eq!(new_addr, 0x1100);
 /// ```
+#[inline]
 pub const fn wrapping_add_same_page(addr: u16, displacement: u8) -> u16 {
     let [page, addr_in_page] = u16::to_be_bytes(addr);
     let wrapped_addr_in_page = u8::wrapping_add(addr_in_page, displacement);
@@ -34,11 +37,13 @@ pub const fn wrapping_add_same_page(addr: u16, displacement: u8) -> u16 {
     new_addr
 }
 
+#[inline]
 pub const fn test_negative(val: u8) -> bool {
     const NEG_BITMASK: u8 = 0b10000000;
     val & NEG_BITMASK != 0
 }
 
+#[inline]
 pub const fn test_overflow(b1: u8, b2: u8) -> bool {
     const BIT_7_MASK: u8 = 0b10000000;
     // Check if there is carry from bit 6 into bit 7 by turning off bit 7 on both operands and

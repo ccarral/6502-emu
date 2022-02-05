@@ -1,3 +1,4 @@
+use crate::bcd;
 use crate::error::Error6502;
 use crate::memory::Memory;
 use crate::opc::{self, AddressMode, Inst, OpMode};
@@ -224,11 +225,15 @@ where
 
                 let result = if self.d_flag() {
                     // Operate in bcd mode
-                    0
+                    let result = bcd::bcd_add_u8(self.ac, operand);
+                    let carry = result > 0b1001_1001;
+                    self.write_c_flag(carry);
+                    result
                 } else {
                     let (result, carry) = u8::overflowing_add(self.ac, operand);
                     self.write_c_flag(carry);
-                    // self.write_v_flag(self.ac, operand);
+                    let overflow = util::test_overflow(self.ac, operand);
+                    self.write_v_flag(overflow);
                     result
                 };
 
@@ -354,7 +359,7 @@ where
                 let bb_addr = u16::wrapping_add(self.pc, 1);
                 let offset = self.mem.read_byte(bb_addr);
                 let offset_16 = {
-                    if offset & 0b10000000 != 0 {
+                    if util::test_negative(offset) {
                         // Number is negative, extend with 0xFF
                         util::combine_u8_to_u16(0xFF, offset)
                     } else {
