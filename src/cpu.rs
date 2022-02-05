@@ -16,11 +16,15 @@ const STACK_ADDR_DEFAULT: u16 = 0x01FF;
 const MAX_INST_CYCLES: u8 = 6;
 
 pub struct Cpu<M> {
+    // Program counter
     pc: u16,
+    // Accumulator
     ac: u8,
     x: u8,
     y: u8,
-    sr: u8,
+    // Flags
+    p: u8,
+    // Stack pointer.
     sp: u16,
     mem: M,
     cycle_count: u8,
@@ -45,7 +49,7 @@ where
             ac: 0x00,
             x: 0x00,
             y: 0x00,
-            sr: FLAGS_DEFAULT,
+            p: FLAGS_DEFAULT,
             sp: STACK_ADDR_DEFAULT,
             mem,
             cycle_count: 0,
@@ -94,9 +98,9 @@ where
     /// * `val` - value to be checked
     pub(crate) fn update_z_flag_with(&mut self, val: u8) {
         if val == 0x00 {
-            self.sr |= Z_FLAG_BITMASK;
+            self.p |= Z_FLAG_BITMASK;
         } else {
-            self.sr &= !Z_FLAG_BITMASK;
+            self.p &= !Z_FLAG_BITMASK;
         }
     }
 
@@ -108,9 +112,9 @@ where
     pub(crate) fn update_n_flag_with(&mut self, val: u8) {
         const NEG_BITMASK: u8 = 0b10000000;
         if val & NEG_BITMASK != 0 {
-            self.sr |= N_FLAG_BITMASK;
+            self.p |= N_FLAG_BITMASK;
         } else {
-            self.sr &= !N_FLAG_BITMASK;
+            self.p &= !N_FLAG_BITMASK;
         }
     }
 
@@ -119,25 +123,25 @@ where
     pub(crate) fn write_c_flag(&mut self, carry: bool) {
         // TODO: Possibly only take one argument and test with acc register?
         if carry {
-            self.sr |= C_FLAG_BITMASK;
+            self.p |= C_FLAG_BITMASK;
         } else {
-            self.sr &= !C_FLAG_BITMASK;
+            self.p &= !C_FLAG_BITMASK;
         }
     }
 
     pub(crate) fn write_v_flag(&mut self, overflow: bool) {
         if overflow {
-            self.sr |= V_FLAG_BITMASK;
+            self.p |= V_FLAG_BITMASK;
         } else {
-            self.sr &= !V_FLAG_BITMASK;
+            self.p &= !V_FLAG_BITMASK;
         }
     }
 
     pub fn set_d_flag(&mut self, value: bool) {
         if value {
-            self.sr |= D_FLAG_BITMASK;
+            self.p |= D_FLAG_BITMASK;
         } else {
-            self.sr &= !D_FLAG_BITMASK;
+            self.p &= !D_FLAG_BITMASK;
         }
     }
 
@@ -168,33 +172,33 @@ where
     }
 
     pub fn or_flags(&mut self, mask: u8) {
-        self.sr |= mask;
+        self.p |= mask;
     }
 
     pub fn reset_flags(&mut self) {
-        self.sr = FLAGS_DEFAULT;
+        self.p = FLAGS_DEFAULT;
     }
 
     pub fn n_flag(&self) -> bool {
-        (self.sr & N_FLAG_BITMASK) != 0
+        (self.p & N_FLAG_BITMASK) != 0
     }
     pub fn v_flag(&self) -> bool {
-        (self.sr & V_FLAG_BITMASK) != 0
+        (self.p & V_FLAG_BITMASK) != 0
     }
     pub fn b_flag(&self) -> bool {
-        (self.sr & B_FLAG_BITMASK) != 0
+        (self.p & B_FLAG_BITMASK) != 0
     }
     pub fn d_flag(&self) -> bool {
-        (self.sr & D_FLAG_BITMASK) != 0
+        (self.p & D_FLAG_BITMASK) != 0
     }
     pub fn i_flag(&self) -> bool {
-        (self.sr & I_FLAG_BITMASK) != 0
+        (self.p & I_FLAG_BITMASK) != 0
     }
     pub fn z_flag(&self) -> bool {
-        (self.sr & Z_FLAG_BITMASK) != 0
+        (self.p & Z_FLAG_BITMASK) != 0
     }
     pub fn c_flag(&self) -> bool {
-        (self.sr & C_FLAG_BITMASK) != 0
+        (self.p & C_FLAG_BITMASK) != 0
     }
 
     pub(crate) fn fetch_next_inst(&self) -> Result<OpMode, Error6502> {
@@ -240,6 +244,25 @@ where
                 self.update_z_flag_with(result);
                 self.update_n_flag_with(result);
                 self.ac = result;
+            }
+            Inst::And => {
+                let operand = {
+                    match address_mode {
+                        AddressMode::IMM => {
+                            // Read immediate byte
+                            self.read_immediate_byte()
+                        }
+                        _ => {
+                            let effective_addr = self.get_effective_address(&address_mode);
+                            self.mem.read_byte(effective_addr)
+                        }
+                    }
+                };
+
+                self.ac &= operand;
+
+                self.update_n_flag_with(self.ac);
+                self.update_z_flag_with(self.ac);
             }
             _ => unimplemented!(),
         }
@@ -395,7 +418,7 @@ where
     ",
             self.pc_usize(),
             self.ac,
-            self.sr
+            self.p
         ))
     }
 }
