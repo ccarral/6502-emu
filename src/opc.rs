@@ -31,7 +31,7 @@ pub enum Inst {
     ADC,
     AND,
     ASL,
-    Bcc,
+    BCC,
     Bcs,
     Beq,
     Bit,

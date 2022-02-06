@@ -59,3 +59,17 @@ pub fn test_asl() {
     cpu.step_inst(Inst::ASL, AddressMode::ZPG).unwrap();
     assert_eq!(cpu.read_byte_from_mem(0x0040), 0b0100_0000);
 }
+
+#[test]
+pub fn test_bcc() {
+    let mut cpu = util::new_cpu_empty_mem();
+    cpu.set_pc(0x0200);
+    cpu.step_inst(Inst::BCC, AddressMode::REL).unwrap();
+    // No jump
+    assert_eq!(cpu.pc(), 0x0202);
+    cpu.write_c_flag(true);
+    // -30
+    cpu.write_to_mem(0x0203, 0xE2);
+    cpu.step_inst(Inst::BCC, AddressMode::REL).unwrap();
+    assert_eq!(cpu.pc(), 0x01E4);
+}

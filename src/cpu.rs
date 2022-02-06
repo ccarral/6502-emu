@@ -171,6 +171,10 @@ where
         self.ac
     }
 
+    pub(crate) fn pc(&self) -> u16 {
+        self.pc
+    }
+
     pub fn or_flags(&mut self, mask: u8) {
         self.p |= mask;
     }
@@ -212,6 +216,7 @@ where
 
     pub fn step_inst(&mut self, inst: Inst, address_mode: AddressMode) -> Result<(), Error6502> {
         // Should "panic" if the program is not well formed
+        let mut change_pc = true;
         match inst {
             Inst::ADC => {
                 let operand = {
@@ -291,12 +296,22 @@ where
                 self.update_z_flag_with(result);
                 self.write_c_flag(carry);
             }
+            Inst::BCC => {
+                // Relative addressing
+                if self.c_flag() {
+                    let target_addr = self.get_relative_address();
+                    self.pc = target_addr;
+                    change_pc = false;
+                }
+            }
+
             _ => unimplemented!(),
         }
 
-        let instr_len = get_instr_len(&address_mode);
-        self.pc += instr_len;
-
+        if change_pc {
+            let instr_len = get_instr_len(&address_mode);
+            self.pc += instr_len;
+        }
         Ok(())
     }
 
@@ -316,6 +331,22 @@ where
         self.mem.read_byte(self.pc + 1)
     }
 
+    pub(crate) fn get_relative_address(&self) -> u16 {
+        // Get 8 bit 2's complement encoded signed offset
+        let bb_addr = u16::wrapping_add(self.pc, 1);
+        let offset = self.mem.read_byte(bb_addr);
+        let offset_16 = {
+            if util::test_negative(offset) {
+                // Number is negative, extend with 0xFF
+                util::combine_u8_to_u16(0xFF, offset)
+            } else {
+                util::combine_u8_to_u16(0x00, offset)
+            }
+        };
+        let target_addr = u16::wrapping_add(offset_16, self.pc);
+        target_addr
+    }
+
     pub(crate) fn get_effective_address(&self, address_mode: &AddressMode) -> u16 {
         match address_mode {
             // As accumulator, immediate and implied addressing modes are 1 byte length operators,
@@ -323,6 +354,9 @@ where
             AddressMode::ACC => unreachable!(),
             AddressMode::IMM => unreachable!(),
             AddressMode::IMPL => unreachable!(),
+            // Relative addressing was moved to it's own function, as the couple instructions
+            // that use, they use it exclusively, so it saves a lookup
+            AddressMode::REL => unreachable!(),
             AddressMode::ZPG => {
                 // Zero Page address 0LL
                 let addr = self.mem.read_byte(self.pc + 1);
@@ -407,21 +441,6 @@ where
                 let effective_addr = util::combine_u8_to_u16(hh, ll);
                 let effective_addr = util::wrapping_add_same_page(effective_addr, self.y);
                 effective_addr
-            }
-            AddressMode::REL => {
-                // Get 8 bit 2's complement encoded signed offset
-                let bb_addr = u16::wrapping_add(self.pc, 1);
-                let offset = self.mem.read_byte(bb_addr);
-                let offset_16 = {
-                    if util::test_negative(offset) {
-                        // Number is negative, extend with 0xFF
-                        util::combine_u8_to_u16(0xFF, offset)
-                    } else {
-                        util::combine_u8_to_u16(0x00, offset)
-                    }
-                };
-                let target_addr = u16::wrapping_add(offset_16, self.pc);
-                target_addr
             }
         }
     }
