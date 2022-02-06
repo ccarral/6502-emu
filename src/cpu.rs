@@ -216,7 +216,7 @@ where
 
     pub fn step_inst(&mut self, inst: Inst, address_mode: AddressMode) -> Result<(), Error6502> {
         // Should "panic" if the program is not well formed
-        let mut change_pc = true;
+        let mut add_to_pc = true;
         match inst {
             Inst::ADC => {
                 let operand = {
@@ -298,17 +298,32 @@ where
             }
             Inst::BCC => {
                 // Relative addressing
+                if !self.c_flag() {
+                    let target_addr = self.get_relative_address();
+                    self.pc = target_addr;
+                    add_to_pc = false;
+                }
+            }
+            Inst::BCS => {
+                // Relative addressing
                 if self.c_flag() {
                     let target_addr = self.get_relative_address();
                     self.pc = target_addr;
-                    change_pc = false;
+                    add_to_pc = false;
+                }
+            }
+            Inst::BEQ => {
+                if self.z_flag() {
+                    let target_addr = self.get_relative_address();
+                    self.pc = target_addr;
+                    add_to_pc = false;
                 }
             }
 
             _ => unimplemented!(),
         }
 
-        if change_pc {
+        if add_to_pc {
             let instr_len = get_instr_len(&address_mode);
             self.pc += instr_len;
         }

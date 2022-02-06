@@ -63,11 +63,27 @@ pub fn test_asl() {
 #[test]
 pub fn test_bcc() {
     let mut cpu = util::new_cpu_empty_mem();
+    cpu.write_c_flag(true);
     cpu.set_pc(0x0200);
     cpu.step_inst(Inst::BCC, AddressMode::REL).unwrap();
     // No jump
     assert_eq!(cpu.pc(), 0x0202);
-    cpu.write_c_flag(true);
+    cpu.write_c_flag(false);
+    // -30
+    cpu.write_to_mem(0x0203, 0xE2);
+    cpu.step_inst(Inst::BCC, AddressMode::REL).unwrap();
+    assert_eq!(cpu.pc(), 0x01E4);
+}
+
+#[test]
+pub fn test_beq() {
+    let mut cpu = util::new_cpu_empty_mem();
+    cpu.update_z_flag_with(1);
+    cpu.set_pc(0x0200);
+    cpu.step_inst(Inst::BEQ, AddressMode::REL).unwrap();
+    // No jump
+    assert_eq!(cpu.pc(), 0x0202);
+    cpu.update_z_flag_with(0);
     // -30
     cpu.write_to_mem(0x0203, 0xE2);
     cpu.step_inst(Inst::BCC, AddressMode::REL).unwrap();
