@@ -9,15 +9,15 @@ const OPS: [Option<OpMode>; 0x10] = [
     None,
     None,
     Some(OpMode(Inst::Ora, AddressMode::ZPG, 3)),
-    Some(OpMode(Inst::Asl, AddressMode::ZPG, 0)),
+    Some(OpMode(Inst::ASL, AddressMode::ZPG, 0)),
     None,
     Some(OpMode(Inst::Php, AddressMode::IMPL, 0)),
     Some(OpMode(Inst::Ora, AddressMode::IMM, 2)),
-    Some(OpMode(Inst::Asl, AddressMode::ACC, 0)),
+    Some(OpMode(Inst::ASL, AddressMode::ACC, 0)),
     None,
     None,
     Some(OpMode(Inst::Ora, AddressMode::ABS, 4)),
-    Some(OpMode(Inst::Asl, AddressMode::ABS, 0)),
+    Some(OpMode(Inst::ASL, AddressMode::ABS, 0)),
     None,
     // 0x10
 ];
@@ -30,7 +30,7 @@ pub const fn get_op_mode(opc: u8) -> Option<OpMode> {
 pub enum Inst {
     ADC,
     AND,
-    Asl,
+    ASL,
     Bcc,
     Bcs,
     Beq,

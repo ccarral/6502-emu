@@ -13,9 +13,9 @@
 
 ## Instructions
 
-- [ ] ADC
-- [ ] AND
-- [ ] ASL
+- [x] ADC
+- [x] AND
+- [x] ASL
 - [ ] BCC
 - [ ] BCS
 - [ ] BEQ

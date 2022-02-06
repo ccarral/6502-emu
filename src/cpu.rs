@@ -264,6 +264,33 @@ where
                 self.update_n_flag_with(self.ac);
                 self.update_z_flag_with(self.ac);
             }
+            Inst::ASL => {
+                let (is_memory, operand, address) = {
+                    match address_mode {
+                        AddressMode::ACC => {
+                            // Read accumulator
+                            (false, self.ac, 0x00)
+                        }
+                        _ => {
+                            let effective_addr = self.get_effective_address(&address_mode);
+                            (true, self.mem.read_byte(effective_addr), effective_addr)
+                        }
+                    }
+                };
+
+                let carry = 0b1000_0000 & operand != 0;
+                let result = operand << 1;
+
+                if is_memory {
+                    self.mem.write_byte(address, result);
+                } else {
+                    self.ac = result;
+                }
+
+                self.update_n_flag_with(result);
+                self.update_z_flag_with(result);
+                self.write_c_flag(carry);
+            }
             _ => unimplemented!(),
         }
 
@@ -277,8 +304,12 @@ where
         self.ac = val;
     }
 
-    pub fn write_to_mem(&mut self, addr: u16, byte: u8) {
+    pub(crate) fn write_to_mem(&mut self, addr: u16, byte: u8) {
         self.mem.write_byte(addr, byte);
+    }
+
+    pub(crate) fn read_byte_from_mem(&self, addr: u16) -> u8 {
+        self.mem.read_byte(addr)
     }
 
     pub(crate) fn read_immediate_byte(&self) -> u8 {

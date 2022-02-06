@@ -40,3 +40,22 @@ pub fn test_and() {
     cpu.step_inst(Inst::AND, AddressMode::ABS).unwrap();
     assert_eq!(cpu.ac(), 0x48);
 }
+
+#[test]
+pub fn test_asl() {
+    let mut cpu = util::new_cpu_empty_mem();
+    // Test with acc
+    cpu.set_ac(0b0100_0000);
+    cpu.step_inst(Inst::ASL, AddressMode::ACC).unwrap();
+    assert_eq!(cpu.ac(), 0b1000_0000);
+    assert!(!cpu.c_flag());
+    cpu.step_inst(Inst::ASL, AddressMode::ACC).unwrap();
+    assert!(cpu.c_flag());
+
+    // Test with memory
+    cpu.set_pc(0x0600);
+    cpu.write_to_mem(0x0040, 0b0010_0000);
+    cpu.write_to_mem(0x0601, 0x40);
+    cpu.step_inst(Inst::ASL, AddressMode::ZPG).unwrap();
+    assert_eq!(cpu.read_byte_from_mem(0x0040), 0b0100_0000);
+}
