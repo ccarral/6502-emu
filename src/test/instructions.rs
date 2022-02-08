@@ -61,8 +61,10 @@ pub fn test_asl() {
 }
 
 #[test]
-pub fn test_bcc() {
+pub fn test_branch_instructions() {
     let mut cpu = util::new_cpu_empty_mem();
+
+    // BCC
     cpu.write_c_flag(true);
     cpu.set_pc(0x0200);
     cpu.step_inst(Inst::BCC, AddressMode::REL).unwrap();
@@ -73,21 +75,30 @@ pub fn test_bcc() {
     cpu.write_to_mem(0x0203, 0xE2);
     cpu.step_inst(Inst::BCC, AddressMode::REL).unwrap();
     assert_eq!(cpu.pc(), 0x01E6);
-}
 
-#[test]
-pub fn test_beq() {
-    let mut cpu = util::new_cpu_empty_mem();
+    // BCS
+    cpu.write_c_flag(false);
+    cpu.set_pc(0x0300);
+    cpu.step_inst(Inst::BCS, AddressMode::REL).unwrap();
+    // No jump
+    assert_eq!(cpu.pc(), 0x0302);
+    cpu.write_c_flag(true);
+    // -30
+    cpu.write_to_mem(0x0303, 0xE2);
+    cpu.step_inst(Inst::BCS, AddressMode::REL).unwrap();
+    assert_eq!(cpu.pc(), 0x02E6);
+
+    // BEQ
     cpu.update_z_flag_with(1);
-    cpu.set_pc(0x0200);
+    cpu.set_pc(0x0400);
     cpu.step_inst(Inst::BEQ, AddressMode::REL).unwrap();
     // No jump
-    assert_eq!(cpu.pc(), 0x0202);
+    assert_eq!(cpu.pc(), 0x0402);
     cpu.update_z_flag_with(0);
     // -30
-    cpu.write_to_mem(0x0203, 0xE2);
-    cpu.step_inst(Inst::BCC, AddressMode::REL).unwrap();
-    assert_eq!(cpu.pc(), 0x01E6);
+    cpu.write_to_mem(0x0403, 0xE2);
+    cpu.step_inst(Inst::BEQ, AddressMode::REL).unwrap();
+    assert_eq!(cpu.pc(), 0x03E6);
 }
 
 #[test]
