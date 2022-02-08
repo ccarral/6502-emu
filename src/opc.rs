@@ -34,7 +34,7 @@ pub enum Inst {
     BCC,
     BCS,
     BEQ,
-    Bit,
+    BIT,
     Bmi,
     Bne,
     Bpl,

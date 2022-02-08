@@ -72,7 +72,7 @@ pub fn test_bcc() {
     // -30
     cpu.write_to_mem(0x0203, 0xE2);
     cpu.step_inst(Inst::BCC, AddressMode::REL).unwrap();
-    assert_eq!(cpu.pc(), 0x01E4);
+    assert_eq!(cpu.pc(), 0x01E6);
 }
 
 #[test]
@@ -87,5 +87,25 @@ pub fn test_beq() {
     // -30
     cpu.write_to_mem(0x0203, 0xE2);
     cpu.step_inst(Inst::BCC, AddressMode::REL).unwrap();
-    assert_eq!(cpu.pc(), 0x01E4);
+    assert_eq!(cpu.pc(), 0x01E6);
+}
+
+#[test]
+pub fn test_bit() {
+    let mut cpu = util::new_cpu_empty_mem();
+    cpu.write_to_mem(0x0500, 0x69);
+    cpu.set_ac(0x69);
+    cpu.write_to_mem(0x0001, 0x00);
+    cpu.write_to_mem(0x0002, 0x05);
+    cpu.step_inst(Inst::BIT, AddressMode::ABS).unwrap();
+    // Equal, so Z = 0
+    assert!(!cpu.z_flag());
+
+    // cpu.set_pc(0x0003);
+    cpu.set_ac(0x87);
+    cpu.write_to_mem(0x0040, 0x88);
+    cpu.write_to_mem(0x0004, 0x40);
+    cpu.step_inst(Inst::BIT, AddressMode::ZPG).unwrap();
+    // Different, so Z = 1
+    assert!(cpu.z_flag());
 }

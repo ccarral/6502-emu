@@ -81,13 +81,11 @@ where
 
     pub(crate) fn stack_push(&mut self, bb: u8) {
         self.mem.write_byte(self.sp, bb);
-        dbg!(self.sp);
         self.sp -= 1;
     }
 
     pub(crate) fn stack_pop(&mut self) -> u8 {
         self.sp += 1;
-        dbg!(self.sp);
         self.mem.read_byte(self.sp)
     }
 
@@ -137,11 +135,27 @@ where
         }
     }
 
-    pub fn set_d_flag(&mut self, value: bool) {
+    pub(crate) fn write_n_flag(&mut self, neg: bool) {
+        if neg {
+            self.p |= N_FLAG_BITMASK;
+        } else {
+            self.p &= !N_FLAG_BITMASK;
+        }
+    }
+
+    pub fn write_d_flag(&mut self, value: bool) {
         if value {
             self.p |= D_FLAG_BITMASK;
         } else {
             self.p &= !D_FLAG_BITMASK;
+        }
+    }
+
+    pub fn write_z_flag(&mut self, value: bool) {
+        if value {
+            self.p |= Z_FLAG_BITMASK;
+        } else {
+            self.p &= !Z_FLAG_BITMASK;
         }
     }
 
@@ -299,7 +313,7 @@ where
             Inst::BCC => {
                 // Relative addressing
                 if !self.c_flag() {
-                    let target_addr = self.get_relative_address();
+                    let target_addr = self.get_relative_address() + 2;
                     self.pc = target_addr;
                     add_to_pc = false;
                 }
@@ -307,17 +321,34 @@ where
             Inst::BCS => {
                 // Relative addressing
                 if self.c_flag() {
-                    let target_addr = self.get_relative_address();
+                    let target_addr = self.get_relative_address() + 2;
                     self.pc = target_addr;
                     add_to_pc = false;
                 }
             }
             Inst::BEQ => {
+                // Relative addressing
                 if self.z_flag() {
-                    let target_addr = self.get_relative_address();
+                    let target_addr = self.get_relative_address() + 2;
                     self.pc = target_addr;
                     add_to_pc = false;
                 }
+            }
+            Inst::BIT => {
+                let operand = dbg!({
+                    let addr = dbg!(self.get_effective_address(&address_mode));
+                    self.mem.read_byte(addr)
+                });
+                dbg!(self.ac);
+
+                let equal = self.ac == operand;
+                let m7 = 0b1000_0000 & operand != 0;
+                let m6 = 0b0100_0000 & operand != 0;
+
+                // Z = 0 if equal, 1 if not
+                self.write_z_flag(!equal);
+                self.write_v_flag(m6);
+                self.write_n_flag(m7);
             }
 
             _ => unimplemented!(),
