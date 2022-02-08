@@ -16,13 +16,13 @@
 - [x] ADC
 - [x] AND
 - [x] ASL
-- [ ] BCC
-- [ ] BCS
-- [ ] BEQ
-- [ ] BIT
-- [ ] BMI
-- [ ] BNE
-- [ ] BPL
+- [x] BCC
+- [x] BCS
+- [x] BEQ
+- [x] BIT
+- [x] BMI
+- [x] BNE
+- [x] BPL
 - [ ] BRK
 - [ ] BVC
 - [ ] BVS

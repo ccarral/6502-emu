@@ -313,7 +313,7 @@ where
             Inst::BCC => {
                 // Relative addressing
                 if !self.c_flag() {
-                    let target_addr = self.get_relative_address() + 2;
+                    let target_addr = self.get_relative_address();
                     self.pc = target_addr;
                     add_to_pc = false;
                 }
@@ -321,7 +321,7 @@ where
             Inst::BCS => {
                 // Relative addressing
                 if self.c_flag() {
-                    let target_addr = self.get_relative_address() + 2;
+                    let target_addr = self.get_relative_address();
                     self.pc = target_addr;
                     add_to_pc = false;
                 }
@@ -329,18 +329,16 @@ where
             Inst::BEQ => {
                 // Relative addressing
                 if self.z_flag() {
-                    let target_addr = self.get_relative_address() + 2;
+                    let target_addr = self.get_relative_address();
                     self.pc = target_addr;
                     add_to_pc = false;
                 }
             }
             Inst::BIT => {
-                let operand = dbg!({
-                    let addr = dbg!(self.get_effective_address(&address_mode));
+                let operand = {
+                    let addr = self.get_effective_address(&address_mode);
                     self.mem.read_byte(addr)
-                });
-                dbg!(self.ac);
-
+                };
                 let equal = self.ac == operand;
                 let m7 = 0b1000_0000 & operand != 0;
                 let m6 = 0b0100_0000 & operand != 0;
@@ -349,6 +347,28 @@ where
                 self.write_z_flag(!equal);
                 self.write_v_flag(m6);
                 self.write_n_flag(m7);
+            }
+            Inst::BMI => {
+                // Relative addressing
+                if self.n_flag() {
+                    let target_addr = self.get_relative_address();
+                    self.pc = target_addr;
+                    add_to_pc = false;
+                }
+            }
+            Inst::BNE => {
+                if !self.z_flag() {
+                    let target_addr = self.get_relative_address();
+                    self.pc = target_addr;
+                    add_to_pc = false;
+                }
+            }
+            Inst::BPL => {
+                if !self.n_flag() {
+                    let target_addr = self.get_relative_address();
+                    self.pc = target_addr;
+                    add_to_pc = false;
+                }
             }
 
             _ => unimplemented!(),
@@ -377,6 +397,7 @@ where
         self.mem.read_byte(self.pc + 1)
     }
 
+    /// Get relative address for jump instruction, min -126 and max 129
     pub(crate) fn get_relative_address(&self) -> u16 {
         // Get 8 bit 2's complement encoded signed offset
         let bb_addr = u16::wrapping_add(self.pc, 1);
@@ -390,7 +411,7 @@ where
             }
         };
         let target_addr = u16::wrapping_add(offset_16, self.pc);
-        target_addr
+        target_addr + 2
     }
 
     pub(crate) fn get_effective_address(&self, address_mode: &AddressMode) -> u16 {

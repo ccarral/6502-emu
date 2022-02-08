@@ -89,16 +89,52 @@ pub fn test_branch_instructions() {
     assert_eq!(cpu.pc(), 0x02E6);
 
     // BEQ
-    cpu.update_z_flag_with(1);
+    cpu.write_z_flag(false);
     cpu.set_pc(0x0400);
     cpu.step_inst(Inst::BEQ, AddressMode::REL).unwrap();
     // No jump
     assert_eq!(cpu.pc(), 0x0402);
-    cpu.update_z_flag_with(0);
+    cpu.write_z_flag(true);
     // -30
     cpu.write_to_mem(0x0403, 0xE2);
     cpu.step_inst(Inst::BEQ, AddressMode::REL).unwrap();
     assert_eq!(cpu.pc(), 0x03E6);
+
+    // BMI
+    cpu.update_n_flag_with(0b11000000);
+    cpu.set_pc(0x0500);
+    cpu.step_inst(Inst::BEQ, AddressMode::REL).unwrap();
+    // No jump
+    assert_eq!(cpu.pc(), 0x0502);
+    cpu.update_n_flag_with(2);
+    // -30
+    cpu.write_to_mem(0x0503, 0xE2);
+    cpu.step_inst(Inst::BEQ, AddressMode::REL).unwrap();
+    assert_eq!(cpu.pc(), 0x04E6);
+
+    // BNE
+    cpu.write_z_flag(true);
+    cpu.set_pc(0x0600);
+    cpu.step_inst(Inst::BNE, AddressMode::REL).unwrap();
+    // No jump
+    assert_eq!(cpu.pc(), 0x0602);
+    cpu.write_z_flag(false);
+    // -30
+    cpu.write_to_mem(0x0603, 0xE2);
+    cpu.step_inst(Inst::BNE, AddressMode::REL).unwrap();
+    assert_eq!(cpu.pc(), 0x05E6);
+
+    // BPL
+    cpu.update_n_flag_with(0b11111111);
+    cpu.set_pc(0x0700);
+    cpu.step_inst(Inst::BPL, AddressMode::REL).unwrap();
+    // No jump
+    assert_eq!(cpu.pc(), 0x0702);
+    cpu.update_n_flag_with(0b00000001);
+    // -30
+    cpu.write_to_mem(0x0703, 0xE2);
+    cpu.step_inst(Inst::BPL, AddressMode::REL).unwrap();
+    assert_eq!(cpu.pc(), 0x06E6);
 }
 
 #[test]

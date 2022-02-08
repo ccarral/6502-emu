@@ -72,15 +72,15 @@ fn test_relative_addressing() {
     // Offset de 30 (dec)
     cpu.write_to_mem(0x0501, 0b00011110);
     let target_addr = cpu.get_relative_address();
-    // 0x0500 + 0x1E (30) = 0x051E
-    assert_eq!(target_addr, 0x051E);
+    // 0x0502 + 0x1E (30) = 0x0520
+    assert_eq!(target_addr, 0x0520);
 
     cpu.set_pc(0x0600);
     // Offset de -30 (dec)
     cpu.write_to_mem(0x0601, 0b11100010);
     let target_addr = cpu.get_relative_address();
-    // 0x0600 + 0xE2 (-30) = 0x05E2
-    assert_eq!(target_addr, 0x05E2);
+    // 0x0602 + 0xE2 (-30) = 0x05E4
+    assert_eq!(target_addr, 0x05E4);
 }
 
 #[test]
