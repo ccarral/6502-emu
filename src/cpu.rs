@@ -392,6 +392,20 @@ where
                 self.pc = new_pc;
                 add_to_pc = false;
             }
+            Inst::BVC => {
+                if !self.v_flag() {
+                    let target_addr = self.get_relative_address();
+                    self.pc = target_addr;
+                    add_to_pc = false;
+                }
+            }
+            Inst::BVS => {
+                if self.v_flag() {
+                    let target_addr = self.get_relative_address();
+                    self.pc = target_addr;
+                    add_to_pc = false;
+                }
+            }
             Inst::RTI => {
                 let p = self.stack_pop();
                 let pc_ll = self.stack_pop();

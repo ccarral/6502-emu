@@ -135,6 +135,30 @@ pub fn test_branch_instructions() {
     cpu.write_to_mem(0x0703, 0xE2);
     cpu.step_inst(Inst::BPL, AddressMode::REL).unwrap();
     assert_eq!(cpu.pc(), 0x06E6);
+
+    // BVC
+    cpu.write_v_flag(true);
+    cpu.set_pc(0x0800);
+    cpu.step_inst(Inst::BVC, AddressMode::REL).unwrap();
+    // No jump
+    assert_eq!(cpu.pc(), 0x0802);
+    cpu.write_v_flag(false);
+    // -30
+    cpu.write_to_mem(0x0803, 0xE2);
+    cpu.step_inst(Inst::BVC, AddressMode::REL).unwrap();
+    assert_eq!(cpu.pc(), 0x07E6);
+
+    // BVS
+    cpu.write_v_flag(false);
+    cpu.set_pc(0x0900);
+    cpu.step_inst(Inst::BVS, AddressMode::REL).unwrap();
+    // No jump
+    assert_eq!(cpu.pc(), 0x0902);
+    cpu.write_v_flag(true);
+    // -30
+    cpu.write_to_mem(0x0903, 0xE2);
+    cpu.step_inst(Inst::BVS, AddressMode::REL).unwrap();
+    assert_eq!(cpu.pc(), 0x08E6);
 }
 
 #[test]
