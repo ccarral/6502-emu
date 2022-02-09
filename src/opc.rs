@@ -46,7 +46,7 @@ pub enum Inst {
     CLI,
     CLV,
     CMP,
-    Cpx,
+    CPX,
     Cpy,
     Dec,
     Dex,

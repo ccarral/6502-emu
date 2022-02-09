@@ -427,7 +427,7 @@ where
                 self.write_v_flag(false);
             }
             Inst::CMP => {
-                let mem = {
+                let data = {
                     let addr = self.get_effective_address(&address_mode);
                     self.mem.read_byte(addr)
                 };
@@ -435,7 +435,7 @@ where
                 let acc = self.ac;
 
                 // A - M
-                let checked_sub = dbg!(acc.checked_sub(mem));
+                let checked_sub = dbg!(acc.checked_sub(data));
                 if let Some(result) = checked_sub {
                     // A >= M
                     // No overflow
@@ -444,6 +444,31 @@ where
                     self.write_n_flag(false);
                 } else {
                     // A < M
+                    // Overflow
+                    self.write_z_flag(false);
+                    self.write_n_flag(true);
+                    self.write_c_flag(false);
+                }
+            }
+            Inst::CPX => {
+                // Compare to register X
+                let data = {
+                    let addr = self.get_effective_address(&address_mode);
+                    self.mem.read_byte(addr)
+                };
+
+                let x = self.x;
+
+                // X - M
+                let checked_sub = x.checked_sub(data);
+                if let Some(result) = checked_sub {
+                    // X >= M
+                    // No overflow
+                    self.update_z_flag_with(result);
+                    self.write_c_flag(true);
+                    self.write_n_flag(false);
+                } else {
+                    // X < M
                     // Overflow
                     self.write_z_flag(false);
                     self.write_n_flag(true);

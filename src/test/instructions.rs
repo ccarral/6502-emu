@@ -220,9 +220,32 @@ pub fn test_cmp() {
     cpu.write_to_mem(0xFFFF, 0xE0);
     cpu.write_to_mem(0x03, 0xFF);
     cpu.write_to_mem(0x04, 0xFF);
-    // 0xE0 - 0x10
+
+    // 0xE0 - 0xE0
     cpu.step_inst(Inst::CMP, AddressMode::ABS).unwrap();
     assert!(cpu.z_flag());
+    assert!(!cpu.n_flag());
+    assert!(cpu.c_flag());
+}
+
+#[test]
+pub fn test_cpx() {
+    let mut cpu = util::new_cpu_empty_mem();
+    cpu.write_to_mem(0x0052, 0x69);
+    cpu.write_to_mem(0x0001, 0x52);
+    cpu.set_x(0x20);
+    // 0x20 - 0x69
+    cpu.step_inst(Inst::CPX, AddressMode::ZPG).unwrap();
+    assert!(!cpu.z_flag());
+    assert!(cpu.n_flag());
+    assert!(!cpu.c_flag());
+
+    cpu.set_x(0xE1);
+    cpu.write_to_mem(0x03, 0xE0);
+
+    // 0xE1 - 0xE0
+    cpu.step_inst(Inst::CPX, AddressMode::ABS).unwrap();
+    assert!(!cpu.z_flag());
     assert!(!cpu.n_flag());
     assert!(cpu.c_flag());
 }
