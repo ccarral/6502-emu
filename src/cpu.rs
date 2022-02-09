@@ -151,6 +151,14 @@ where
         }
     }
 
+    pub fn write_i_flag(&mut self, value: bool) {
+        if value {
+            self.p |= I_FLAG_BITMASK;
+        } else {
+            self.p &= !I_FLAG_BITMASK;
+        }
+    }
+
     pub fn write_z_flag(&mut self, value: bool) {
         if value {
             self.p |= Z_FLAG_BITMASK;
@@ -404,6 +412,42 @@ where
                     let target_addr = self.get_relative_address();
                     self.pc = target_addr;
                     add_to_pc = false;
+                }
+            }
+            Inst::CLC => {
+                self.write_c_flag(false);
+            }
+            Inst::CLD => {
+                self.write_d_flag(false);
+            }
+            Inst::CLI => {
+                self.write_i_flag(false);
+            }
+            Inst::CLV => {
+                self.write_v_flag(false);
+            }
+            Inst::CMP => {
+                let mem = {
+                    let addr = self.get_effective_address(&address_mode);
+                    self.mem.read_byte(addr)
+                };
+
+                let acc = self.ac;
+
+                // A - M
+                let checked_sub = dbg!(acc.checked_sub(mem));
+                if let Some(result) = checked_sub {
+                    // A >= M
+                    // No overflow
+                    self.update_z_flag_with(result);
+                    self.write_c_flag(true);
+                    self.write_n_flag(false);
+                } else {
+                    // A < M
+                    // Overflow
+                    self.write_z_flag(false);
+                    self.write_n_flag(true);
+                    self.write_c_flag(false);
                 }
             }
             Inst::RTI => {

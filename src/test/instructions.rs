@@ -202,3 +202,27 @@ pub fn test_brk() {
     assert_eq!(cpu.b_flag(), true);
     assert_eq!(cpu.n_flag(), true);
 }
+
+#[test]
+pub fn test_cmp() {
+    let mut cpu = util::new_cpu_empty_mem();
+    cpu.set_y(0x10);
+    cpu.write_to_mem(0x0001, 0x42);
+    cpu.write_to_mem(0x0052, 0x69);
+    cpu.set_ac(0x20);
+    // 0x20 - 0x69
+    cpu.step_inst(Inst::CMP, AddressMode::INDY).unwrap();
+    assert!(!cpu.z_flag());
+    assert!(cpu.n_flag());
+    assert!(!cpu.c_flag());
+
+    cpu.set_ac(0xE0);
+    cpu.write_to_mem(0xFFFF, 0xE0);
+    cpu.write_to_mem(0x03, 0xFF);
+    cpu.write_to_mem(0x04, 0xFF);
+    // 0xE0 - 0x10
+    cpu.step_inst(Inst::CMP, AddressMode::ABS).unwrap();
+    assert!(cpu.z_flag());
+    assert!(!cpu.n_flag());
+    assert!(cpu.c_flag());
+}
