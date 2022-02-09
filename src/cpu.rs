@@ -159,6 +159,14 @@ where
         }
     }
 
+    pub fn write_b_flag(&mut self, value: bool) {
+        if value {
+            self.p |= B_FLAG_BITMASK;
+        } else {
+            self.p &= !B_FLAG_BITMASK;
+        }
+    }
+
     /// Convert u16 pc to usize so it can be used to address memory
     pub fn pc_usize(&self) -> usize {
         // Mask pc to u16::MAX
@@ -369,6 +377,29 @@ where
                     self.pc = target_addr;
                     add_to_pc = false;
                 }
+            }
+            Inst::BRK => {
+                // Push pc + 2 to stack
+                let pc = self.pc + 2;
+                let [pc_hh, pc_ll] = pc.to_be_bytes();
+                self.stack_push(pc_hh);
+                self.stack_push(pc_ll);
+                self.write_b_flag(true);
+                self.stack_push(self.p);
+                let new_pc_ll = self.mem.read_byte(0xFFFE);
+                let new_pc_hh = self.mem.read_byte(0xFFFF);
+                let new_pc = u16::from_be_bytes([new_pc_hh, new_pc_ll]);
+                self.pc = new_pc;
+                add_to_pc = false;
+            }
+            Inst::RTI => {
+                let p = self.stack_pop();
+                let pc_ll = self.stack_pop();
+                let pc_hh = self.stack_pop();
+                let pc = u16::from_be_bytes([pc_hh, pc_ll]);
+                self.p = p;
+                self.pc = pc;
+                add_to_pc = false;
             }
 
             _ => unimplemented!(),

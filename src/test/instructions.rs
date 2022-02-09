@@ -148,11 +148,33 @@ pub fn test_bit() {
     // Equal, so Z = 0
     assert!(!cpu.z_flag());
 
-    // cpu.set_pc(0x0003);
     cpu.set_ac(0x87);
     cpu.write_to_mem(0x0040, 0x88);
     cpu.write_to_mem(0x0004, 0x40);
     cpu.step_inst(Inst::BIT, AddressMode::ZPG).unwrap();
     // Different, so Z = 1
     assert!(cpu.z_flag());
+}
+
+#[test]
+pub fn test_brk() {
+    let mut cpu = util::new_cpu_empty_mem();
+    cpu.set_pc(0x0100);
+    cpu.write_n_flag(true);
+    cpu.write_to_mem(0xFFFE, 0x69);
+    cpu.write_to_mem(0xFFFF, 0x42);
+    cpu.step_inst(Inst::BRK, AddressMode::IMPL).unwrap();
+    assert_eq!(cpu.pc(), 0x4269);
+
+    cpu.write_n_flag(false);
+    cpu.write_c_flag(true);
+    cpu.write_v_flag(true);
+    cpu.write_b_flag(false);
+    cpu.write_z_flag(true);
+    cpu.write_d_flag(true);
+
+    cpu.step_inst(Inst::RTI, AddressMode::IMPL).unwrap();
+    assert_eq!(cpu.pc(), 0x0100 + 2);
+    assert_eq!(cpu.b_flag(), true);
+    assert_eq!(cpu.n_flag(), true);
 }

@@ -3,7 +3,7 @@ pub struct OpMode(pub Inst, pub AddressMode, pub u8);
 
 const OPS: [Option<OpMode>; 0x10] = [
     // 0x00
-    Some(OpMode(Inst::Brk, AddressMode::IMPL, 0)),
+    Some(OpMode(Inst::BRK, AddressMode::IMPL, 0)),
     Some(OpMode(Inst::Ora, AddressMode::INDX, 6)),
     None,
     None,
@@ -38,7 +38,7 @@ pub enum Inst {
     BMI,
     BNE,
     BPL,
-    Brk,
+    BRK,
     Bvc,
     Bvs,
     Clc,
@@ -69,7 +69,7 @@ pub enum Inst {
     Plp,
     Rol,
     Ror,
-    Rti,
+    RTI,
     Rts,
     Sbc,
     Sec,
