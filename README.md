@@ -5,7 +5,7 @@
 * Status Register (Flags)
   - [x] Negative flag (N)
   - [x] Overflow flag (V)
-  - [ ] Break flag (B)
+  - [x] Break flag (B)
   - [ ] Decimal (D)
   - [ ] Interrupt (I)
   - [x] Zero flag (Z)
@@ -23,19 +23,19 @@
 - [x] BMI
 - [x] BNE
 - [x] BPL
-- [ ] BRK
-- [ ] BVC
-- [ ] BVS
-- [ ] CLC
-- [ ] CLD
-- [ ] CLI
-- [ ] CLV
-- [ ] CMP
-- [ ] CPX
-- [ ] CPY
-- [ ] DEC
-- [ ] DEX
-- [ ] DEY
+- [x] BRK
+- [x] BVC
+- [x] BVS
+- [x] CLC
+- [x] CLD
+- [x] CLI
+- [x] CLV
+- [x] CMP
+- [x] CPX
+- [x] CPY
+- [x] DEC
+- [x] DEX
+- [x] DEY
 - [ ] EOR
 - [ ] INC
 - [ ] INX
@@ -54,7 +54,7 @@
 - [ ] PLP
 - [ ] ROL
 - [ ] ROR
-- [ ] RTI
+- [x] RTI
 - [ ] RTS
 - [ ] SBC
 - [ ] SEC

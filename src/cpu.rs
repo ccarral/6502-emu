@@ -428,8 +428,13 @@ where
             }
             Inst::CMP => {
                 let data = {
-                    let addr = self.get_effective_address(&address_mode);
-                    self.mem.read_byte(addr)
+                    match address_mode {
+                        AddressMode::IMM => self.mem.read_byte(self.pc + 1),
+                        _ => {
+                            let addr = self.get_effective_address(&address_mode);
+                            self.mem.read_byte(addr)
+                        }
+                    }
                 };
 
                 let acc = self.ac;
@@ -453,8 +458,13 @@ where
             Inst::CPX => {
                 // Compare to register X
                 let data = {
-                    let addr = self.get_effective_address(&address_mode);
-                    self.mem.read_byte(addr)
+                    match address_mode {
+                        AddressMode::IMM => self.mem.read_byte(self.pc + 1),
+                        _ => {
+                            let addr = self.get_effective_address(&address_mode);
+                            self.mem.read_byte(addr)
+                        }
+                    }
                 };
 
                 let x = self.x;
@@ -474,6 +484,60 @@ where
                     self.write_n_flag(true);
                     self.write_c_flag(false);
                 }
+            }
+            Inst::CPY => {
+                // Compare to register Y
+                let data = {
+                    match address_mode {
+                        AddressMode::IMM => self.mem.read_byte(self.pc + 1),
+                        _ => {
+                            let addr = self.get_effective_address(&address_mode);
+                            self.mem.read_byte(addr)
+                        }
+                    }
+                };
+
+                let y = self.y;
+
+                // Y - M
+                let checked_sub = dbg!(y.checked_sub(data));
+                if let Some(result) = checked_sub {
+                    // Y >= M
+                    // No overflow
+                    self.update_z_flag_with(result);
+                    self.write_c_flag(true);
+                    self.write_n_flag(false);
+                } else {
+                    // Y < M
+                    // Overflow
+                    self.write_z_flag(false);
+                    self.write_n_flag(true);
+                    self.write_c_flag(false);
+                }
+            }
+            Inst::DEC => {
+                let (addr, operand) = {
+                    let addr = self.get_effective_address(&address_mode);
+                    (addr, self.mem.read_byte(addr))
+                };
+                let result = operand.wrapping_sub(1);
+                self.mem.write_byte(addr, result);
+                self.update_n_flag_with(result);
+                self.update_z_flag_with(result);
+            }
+            Inst::DEX => {
+                let x = self.x;
+                let x = x.wrapping_sub(1);
+                self.x = x;
+                self.update_z_flag_with(x);
+                self.update_n_flag_with(x);
+            }
+            Inst::DEY => {
+                let y = self.y;
+                let y = y.wrapping_sub(1);
+                self.y = y;
+                self.update_z_flag_with(y);
+                self.update_n_flag_with(y);
             }
             Inst::RTI => {
                 let p = self.stack_pop();

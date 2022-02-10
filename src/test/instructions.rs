@@ -244,8 +244,64 @@ pub fn test_cpx() {
     cpu.write_to_mem(0x03, 0xE0);
 
     // 0xE1 - 0xE0
-    cpu.step_inst(Inst::CPX, AddressMode::ABS).unwrap();
+    cpu.step_inst(Inst::CPX, AddressMode::IMM).unwrap();
     assert!(!cpu.z_flag());
     assert!(!cpu.n_flag());
     assert!(cpu.c_flag());
+}
+#[test]
+pub fn test_cpy() {
+    let mut cpu = util::new_cpu_empty_mem();
+    cpu.write_to_mem(0x0001, 0x69);
+    cpu.set_y(0x20);
+    // 0x20 - 0x69
+    cpu.step_inst(Inst::CPY, AddressMode::IMM).unwrap();
+    assert!(!cpu.z_flag());
+    assert!(cpu.n_flag());
+    assert!(!cpu.c_flag());
+
+    cpu.set_y(0xE1);
+    cpu.write_to_mem(0x03, 0xE0);
+
+    // 0xE1 - 0xE0
+    cpu.step_inst(Inst::CPY, AddressMode::IMM).unwrap();
+    assert!(!cpu.z_flag());
+    assert!(!cpu.n_flag());
+    assert!(cpu.c_flag());
+}
+
+#[test]
+pub fn test_dec() {
+    let mut cpu = util::new_cpu_empty_mem();
+    cpu.write_to_mem(0x0020, 0x01);
+    cpu.write_to_mem(0x0001, 0x20);
+    cpu.step_inst(Inst::DEC, AddressMode::ZPG).unwrap();
+    assert!(cpu.z_flag());
+    assert!(!cpu.n_flag());
+    cpu.write_to_mem(0x0003, 0x20);
+    cpu.step_inst(Inst::DEC, AddressMode::ZPG).unwrap();
+    assert!(!cpu.z_flag());
+    assert!(cpu.n_flag());
+}
+#[test]
+pub fn test_dex() {
+    let mut cpu = util::new_cpu_empty_mem();
+    cpu.set_x(0x01);
+    cpu.step_inst(Inst::DEX, AddressMode::IMPL).unwrap();
+    assert!(cpu.z_flag());
+    assert!(!cpu.n_flag());
+    cpu.step_inst(Inst::DEX, AddressMode::IMPL).unwrap();
+    assert!(!cpu.z_flag());
+    assert!(cpu.n_flag());
+}
+#[test]
+pub fn test_dey() {
+    let mut cpu = util::new_cpu_empty_mem();
+    cpu.set_y(0x01);
+    cpu.step_inst(Inst::DEY, AddressMode::IMPL).unwrap();
+    assert!(cpu.z_flag());
+    assert!(!cpu.n_flag());
+    cpu.step_inst(Inst::DEY, AddressMode::IMPL).unwrap();
+    assert!(!cpu.z_flag());
+    assert!(cpu.n_flag());
 }
