@@ -51,7 +51,7 @@ pub enum Inst {
     DEC,
     DEX,
     DEY,
-    Eor,
+    EOR,
     Inc,
     Inx,
     Iny,

@@ -427,13 +427,11 @@ where
                 self.write_v_flag(false);
             }
             Inst::CMP => {
-                let data = {
-                    match address_mode {
-                        AddressMode::IMM => self.mem.read_byte(self.pc + 1),
-                        _ => {
-                            let addr = self.get_effective_address(&address_mode);
-                            self.mem.read_byte(addr)
-                        }
+                let data = match address_mode {
+                    AddressMode::IMM => self.mem.read_byte(self.pc + 1),
+                    _ => {
+                        let addr = self.get_effective_address(&address_mode);
+                        self.mem.read_byte(addr)
                     }
                 };
 
@@ -538,6 +536,20 @@ where
                 self.y = y;
                 self.update_z_flag_with(y);
                 self.update_n_flag_with(y);
+            }
+            Inst::EOR => {
+                let operand = match address_mode {
+                    AddressMode::IMM => self.mem.read_byte(self.pc + 1),
+                    _ => {
+                        let addr = self.get_effective_address(&address_mode);
+                        self.mem.read_byte(addr)
+                    }
+                };
+
+                let acc = self.ac;
+                let result = acc ^ operand;
+                self.update_z_flag_with(result);
+                self.update_n_flag_with(result);
             }
             Inst::RTI => {
                 let p = self.stack_pop();

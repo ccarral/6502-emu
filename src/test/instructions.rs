@@ -305,3 +305,18 @@ pub fn test_dey() {
     assert!(!cpu.z_flag());
     assert!(cpu.n_flag());
 }
+
+#[test]
+pub fn test_eor() {
+    let mut cpu = util::new_cpu_empty_mem();
+    cpu.set_ac(0b10000000);
+    cpu.write_to_mem(0x0001, 0b10000000);
+    cpu.step_inst(Inst::EOR, AddressMode::IMM).unwrap();
+    assert!(cpu.z_flag());
+    assert!(!cpu.n_flag());
+    cpu.set_ac(0b00000001);
+    cpu.write_to_mem(0x0003, 0b10000000);
+    cpu.step_inst(Inst::EOR, AddressMode::IMM).unwrap();
+    assert!(!cpu.z_flag());
+    assert!(cpu.n_flag());
+}
