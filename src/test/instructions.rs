@@ -320,3 +320,20 @@ pub fn test_eor() {
     assert!(!cpu.z_flag());
     assert!(cpu.n_flag());
 }
+
+#[test]
+pub fn test_inc() {
+    let mut cpu = util::new_cpu_empty_mem();
+    cpu.write_to_mem(0x0100, 0xFE);
+    cpu.write_to_mem(0x01, 0x00);
+    cpu.write_to_mem(0x02, 0x01);
+    cpu.step_inst(Inst::INC, AddressMode::ABS).unwrap();
+    let b = cpu.read_byte_from_mem(0x0100);
+    assert_eq!(b, 0xFF);
+    cpu.set_pc(0x00);
+    cpu.step_inst(Inst::INC, AddressMode::ABS).unwrap();
+    let b = cpu.read_byte_from_mem(0x0100);
+    assert_eq!(b, 0x00);
+    assert!(cpu.z_flag());
+    assert!(!cpu.n_flag());
+}

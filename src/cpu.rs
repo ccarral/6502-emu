@@ -551,6 +551,16 @@ where
                 self.update_z_flag_with(result);
                 self.update_n_flag_with(result);
             }
+            Inst::INC => {
+                let (addr, operand) = dbg!({
+                    let addr = self.get_effective_address(&address_mode);
+                    (addr, self.mem.read_byte(addr))
+                });
+                let result = operand.wrapping_add(1);
+                self.mem.write_byte(addr, result);
+                self.update_n_flag_with(result);
+                self.update_z_flag_with(result);
+            }
             Inst::RTI => {
                 let p = self.stack_pop();
                 let pc_ll = self.stack_pop();

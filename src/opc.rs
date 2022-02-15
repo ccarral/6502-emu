@@ -52,7 +52,7 @@ pub enum Inst {
     DEX,
     DEY,
     EOR,
-    Inc,
+    INC,
     Inx,
     Iny,
     Jmp,
