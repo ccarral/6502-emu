@@ -36,8 +36,8 @@
 - [x] DEC
 - [x] DEX
 - [x] DEY
-- [ ] EOR
-- [ ] INC
+- [x] EOR
+- [x] INC
 - [ ] INX
 - [ ] INY
 - [ ] JMP
