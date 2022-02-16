@@ -567,7 +567,12 @@ where
                 self.update_n_flag_with(self.x);
                 self.update_z_flag_with(self.x);
             }
-            Inst::INY => {}
+            Inst::INY => {
+                let y = self.y;
+                self.y = y.wrapping_add(1);
+                self.update_n_flag_with(self.y);
+                self.update_z_flag_with(self.y);
+            }
             Inst::RTI => {
                 let p = self.stack_pop();
                 let pc_ll = self.stack_pop();
