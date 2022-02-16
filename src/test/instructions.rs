@@ -337,3 +337,15 @@ pub fn test_inc() {
     assert!(cpu.z_flag());
     assert!(!cpu.n_flag());
 }
+
+#[test]
+pub fn test_inx() {
+    let mut cpu = util::new_cpu_empty_mem();
+    cpu.set_x(0xFE);
+    cpu.step_inst(Inst::INX, AddressMode::IMPL).unwrap();
+    assert!(!cpu.z_flag());
+    assert!(cpu.n_flag());
+    cpu.step_inst(Inst::INX, AddressMode::IMPL).unwrap();
+    assert!(cpu.z_flag());
+    assert!(!cpu.n_flag());
+}
