@@ -573,6 +573,11 @@ where
                 self.update_n_flag_with(self.y);
                 self.update_z_flag_with(self.y);
             }
+            Inst::JMP => {
+                let addr = self.get_effective_address(&address_mode);
+                self.pc = addr;
+                add_to_pc = false;
+            }
             Inst::RTI => {
                 let p = self.stack_pop();
                 let pc_ll = self.stack_pop();

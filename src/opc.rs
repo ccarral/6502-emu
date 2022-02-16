@@ -49,7 +49,7 @@ pub enum Inst {
     INC,
     INX,
     INY,
-    Jmp,
+    JMP,
     Jsr,
     Lda,
     Ldx,

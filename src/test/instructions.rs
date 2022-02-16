@@ -361,3 +361,12 @@ pub fn test_iny() {
     assert!(cpu.z_flag());
     assert!(!cpu.n_flag());
 }
+
+#[test]
+pub fn test_jmp() {
+    let mut cpu = util::new_cpu_empty_mem();
+    cpu.write_to_mem(0x01, 0x30);
+    cpu.write_to_mem(0x02, 0x50);
+    cpu.step_inst(Inst::JMP, AddressMode::ABS).unwrap();
+    assert_eq!(cpu.pc(), 0x5030);
+}
