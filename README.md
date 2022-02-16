@@ -38,9 +38,9 @@
 - [x] DEY
 - [x] EOR
 - [x] INC
-- [ ] INX
-- [ ] INY
-- [ ] JMP
+- [x] INX
+- [x] INY
+- [x] JMP
 - [ ] JSR
 - [ ] LDA
 - [ ] LDX
