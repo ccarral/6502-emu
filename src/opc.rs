@@ -10,7 +10,6 @@ pub const fn init_opc_array() -> [Option<OpMode>; 0xFF] {
     opc_arr[0x08] = Some(OpMode(Inst::Php, AddressMode::IMPL, 0));
     opc_arr[0x09] = Some(OpMode(Inst::Ora, AddressMode::IMM, 2));
     opc_arr[0x0A] = Some(OpMode(Inst::ASL, AddressMode::ACC, 0));
-    opc_arr[0x0B] = None;
     opc_arr[0x0D] = Some(OpMode(Inst::Ora, AddressMode::ABS, 4));
     opc_arr[0x0E] = Some(OpMode(Inst::ASL, AddressMode::ABS, 0));
 
@@ -18,7 +17,7 @@ pub const fn init_opc_array() -> [Option<OpMode>; 0xFF] {
 }
 
 pub const fn get_op_mode(opc: u8) -> Option<OpMode> {
-    OPS[opc as usize]
+    unimplemented!();
 }
 
 #[derive(Copy, Clone)]
