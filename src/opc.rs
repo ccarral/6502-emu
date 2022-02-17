@@ -1,8 +1,18 @@
 #[derive(Copy, Clone)]
+// (Instruction, AddressMode, cycles)
 pub struct OpMode(pub Inst, pub AddressMode, pub u8);
 
 pub const fn init_opc_array() -> [Option<OpMode>; 0xFF] {
     let mut opc_arr: [Option<OpMode>; 0xFF] = [None; 0xFF];
+    opc_arr[0x69] = Some(OpMode(Inst::ADC, AddressMode::IMM, 2));
+    opc_arr[0x65] = Some(OpMode(Inst::ADC, AddressMode::ZPG, 3));
+    opc_arr[0x75] = Some(OpMode(Inst::ADC, AddressMode::ZPGX, 4));
+    opc_arr[0x6D] = Some(OpMode(Inst::ADC, AddressMode::ABS, 4));
+    opc_arr[0x7D] = Some(OpMode(Inst::ADC, AddressMode::ABSX, 4));
+    opc_arr[0x79] = Some(OpMode(Inst::ADC, AddressMode::ABSY, 4));
+    opc_arr[0x61] = Some(OpMode(Inst::ADC, AddressMode::INDX, 6));
+    opc_arr[0x71] = Some(OpMode(Inst::ADC, AddressMode::INDY, 5));
+
     opc_arr[0x00] = Some(OpMode(Inst::BRK, AddressMode::IMPL, 0));
     opc_arr[0x01] = Some(OpMode(Inst::Ora, AddressMode::INDX, 6));
     opc_arr[0x05] = Some(OpMode(Inst::Ora, AddressMode::ZPG, 3));

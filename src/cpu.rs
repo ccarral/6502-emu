@@ -438,7 +438,7 @@ where
                 let acc = self.ac;
 
                 // A - M
-                let checked_sub = dbg!(acc.checked_sub(data));
+                let checked_sub = acc.checked_sub(data);
                 if let Some(result) = checked_sub {
                     // A >= M
                     // No overflow
@@ -498,7 +498,7 @@ where
                 let y = self.y;
 
                 // Y - M
-                let checked_sub = dbg!(y.checked_sub(data));
+                let checked_sub = y.checked_sub(data);
                 if let Some(result) = checked_sub {
                     // Y >= M
                     // No overflow
@@ -552,10 +552,10 @@ where
                 self.update_n_flag_with(result);
             }
             Inst::INC => {
-                let (addr, operand) = dbg!({
+                let (addr, operand) = {
                     let addr = self.get_effective_address(&address_mode);
                     (addr, self.mem.read_byte(addr))
-                });
+                };
                 let result = operand.wrapping_add(1);
                 self.mem.write_byte(addr, result);
                 self.update_n_flag_with(result);
