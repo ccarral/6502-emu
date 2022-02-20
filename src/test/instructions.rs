@@ -370,3 +370,19 @@ pub fn test_jmp() {
     cpu.step_inst(Inst::JMP, AddressMode::ABS).unwrap();
     assert_eq!(cpu.pc(), 0x5030);
 }
+
+#[test]
+pub fn test_jsr() {
+    let mut cpu = util::new_cpu_empty_mem();
+
+    cpu.set_pc(0x0069);
+    cpu.write_to_mem(0x006A, 0x50);
+    cpu.write_to_mem(0x006B, 0x45);
+    // Pushes 0x006B to stack
+    cpu.step_inst(Inst::JSR, AddressMode::ABS).unwrap();
+    assert_eq!(cpu.pc(), 0x4550);
+    // Pulls 0x006B and sets pc to 0x006C
+    cpu.step_inst(Inst::RTS, AddressMode::IMPL).unwrap();
+
+    assert_eq!(cpu.pc(), 0x006C);
+}
