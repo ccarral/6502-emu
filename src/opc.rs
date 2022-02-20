@@ -13,6 +13,15 @@ pub const fn init_opc_array() -> [Option<OpMode>; 0xFF] {
     opc_arr[0x61] = Some(OpMode(Inst::ADC, AddressMode::INDX, 6));
     opc_arr[0x71] = Some(OpMode(Inst::ADC, AddressMode::INDY, 5));
 
+    opc_arr[0x29] = Some(OpMode(Inst::AND, AddressMode::IMM, 2));
+    opc_arr[0x25] = Some(OpMode(Inst::AND, AddressMode::ZPG, 3));
+    opc_arr[0x35] = Some(OpMode(Inst::AND, AddressMode::ZPGX, 4));
+    opc_arr[0x2D] = Some(OpMode(Inst::AND, AddressMode::ABS, 4));
+    opc_arr[0x3D] = Some(OpMode(Inst::AND, AddressMode::ABSX, 4));
+    opc_arr[0x39] = Some(OpMode(Inst::AND, AddressMode::ABSY, 4));
+    opc_arr[0x21] = Some(OpMode(Inst::AND, AddressMode::INDX, 6));
+    opc_arr[0x31] = Some(OpMode(Inst::AND, AddressMode::INDY, 5));
+
     opc_arr[0x00] = Some(OpMode(Inst::BRK, AddressMode::IMPL, 0));
     opc_arr[0x01] = Some(OpMode(Inst::Ora, AddressMode::INDX, 6));
     opc_arr[0x05] = Some(OpMode(Inst::Ora, AddressMode::ZPG, 3));
