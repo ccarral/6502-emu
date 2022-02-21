@@ -24,7 +24,7 @@ pub const fn u8_to_u16(val: u8) -> u16 {
 /// # Examples
 ///
 /// ```rust
-/// use emu6502::util::wrapping_add_same_page;
+/// use mini6502::util::wrapping_add_same_page;
 /// let addr = 0x11FF;
 /// let displ = 1;
 /// let new_addr = wrapping_add_same_page(addr, displ);

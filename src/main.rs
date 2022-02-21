@@ -1,8 +1,8 @@
 fn main() {
-    use emu6502::cpu::Cpu;
-    use emu6502::memory::SimpleMemory;
+    use mini6502::cpu::Cpu;
+    use mini6502::memory::SimpleMemory;
 
-    let mem = emu6502::util::new_mem_with_asm("ORA #$20\nORA#$45").unwrap();
+    let mem = mini6502::util::new_mem_with_asm("ORA #$20\nORA#$45").unwrap();
     let cpu = Cpu::with_mem(mem);
 
     let stdin = std::io::stdin();

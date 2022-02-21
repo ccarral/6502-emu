@@ -1,5 +1,5 @@
 [package]
-name = "emu6502"
+name = "mini6502"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,4 +7,4 @@ edition = "2021"
 asm6502 = "0.1.2"
 
 [lib]
-name = "emu6502"
+name = "mini6502"

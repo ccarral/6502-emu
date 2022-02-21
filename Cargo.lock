@@ -12,7 +12,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "emu6502"
+name = "mini6502"
 version = "0.1.0"
 dependencies = [
  "asm6502",
