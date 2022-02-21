@@ -374,7 +374,6 @@ pub fn test_jmp() {
 #[test]
 pub fn test_jsr() {
     let mut cpu = util::new_cpu_empty_mem();
-
     cpu.set_pc(0x0069);
     cpu.write_to_mem(0x006A, 0x50);
     cpu.write_to_mem(0x006B, 0x45);
@@ -383,6 +382,5 @@ pub fn test_jsr() {
     assert_eq!(cpu.pc(), 0x4550);
     // Pulls 0x006B and sets pc to 0x006C
     cpu.step_inst(Inst::RTS, AddressMode::IMPL).unwrap();
-
     assert_eq!(cpu.pc(), 0x006C);
 }

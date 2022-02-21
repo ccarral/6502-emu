@@ -1,15 +1,8 @@
-mod bcd;
-mod cpu;
-mod error;
-mod memory;
-mod opc;
-mod test;
-mod util;
 fn main() {
-    use crate::cpu::Cpu;
-    use crate::memory::SimpleMemory;
+    use emu6502::cpu::Cpu;
+    use emu6502::memory::SimpleMemory;
 
-    let mem = util::new_mem_with_asm("ORA #$20\nORA#$45").unwrap();
+    let mem = emu6502::util::new_mem_with_asm("ORA #$20\nORA#$45").unwrap();
     let cpu = Cpu::with_mem(mem);
 
     let stdin = std::io::stdin();

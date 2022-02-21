@@ -1,7 +1,10 @@
 [package]
-name = "rs-6502"
+name = "emu6502"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
 asm6502 = "0.1.2"
+
+[lib]
+name = "emu6502"
