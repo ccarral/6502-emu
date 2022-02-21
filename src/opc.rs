@@ -36,7 +36,8 @@ pub const fn init_opc_array() -> [Option<OpMode>; 0xFF] {
 }
 
 pub const fn get_op_mode(opc: u8) -> Option<OpMode> {
-    unimplemented!();
+    const OPC_ARRAY: [Option<OpMode>; 0xFF] = init_opc_array();
+    OPC_ARRAY[opc as usize]
 }
 
 #[derive(Copy, Clone)]
