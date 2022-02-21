@@ -27,6 +27,7 @@ pub struct Cpu<M> {
     // Stack pointer.
     sp: u16,
     mem: M,
+    ir: Option<Inst>,
     cycle_count: u8,
 }
 
@@ -51,6 +52,7 @@ where
             y: 0x00,
             p: FLAGS_DEFAULT,
             sp: STACK_ADDR_DEFAULT,
+            ir: None,
             mem,
             cycle_count: 0,
         }
@@ -68,8 +70,15 @@ where
     ///
     /// Fails whenever fetching the next (valid) instruction fails.
     pub fn run(mut self, callable: &mut dyn FnMut(&Cpu<M>)) -> Result<(), Error6502> {
-        while !self.exit() {
-            callable(&self);
+        loop {
+            // Loop until we encounter an unknown opcode
+            if let Ok(OpMode(instruction, address_mode, _cycles)) = self.fetch_next_inst() {
+                self.set_ir(instruction);
+                self.step_inst(instruction, address_mode)?;
+                callable(&self);
+            } else {
+                break;
+            }
         }
 
         Ok(())
@@ -242,6 +251,10 @@ where
             Some(op_mode) => Ok(op_mode),
             None => Err(Error6502::InvalidInstruction),
         }
+    }
+
+    fn set_ir(&mut self, inst: Inst) {
+        self.ir = Some(inst);
     }
 
     pub fn step_inst(&mut self, inst: Inst, address_mode: AddressMode) -> Result<(), Error6502> {
