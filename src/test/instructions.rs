@@ -384,3 +384,11 @@ pub fn test_jsr() {
     cpu.step_inst(Inst::RTS, AddressMode::IMPL).unwrap();
     assert_eq!(cpu.pc(), 0x006C);
 }
+
+#[test]
+pub fn test_lda() {
+    let mut cpu = util::new_cpu_empty_mem();
+    cpu.write_to_mem(0x01, 0x35);
+    cpu.step_inst(Inst::LDA, AddressMode::IMM).unwrap();
+    assert_eq!(cpu.ac(), 0x35);
+}

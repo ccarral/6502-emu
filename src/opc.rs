@@ -71,7 +71,7 @@ pub enum Inst {
     INY,
     JMP,
     JSR,
-    Lda,
+    LDA,
     Ldx,
     Ldy,
     Lsr,

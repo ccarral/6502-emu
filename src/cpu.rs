@@ -80,12 +80,7 @@ where
                 break;
             }
         }
-
         Ok(())
-    }
-
-    pub fn exit(&self) -> bool {
-        false
     }
 
     pub(crate) fn stack_push(&mut self, bb: u8) {
@@ -615,6 +610,16 @@ where
                 let pc = u16::from_be_bytes([pc_ll, pc_hh]);
                 self.pc = pc + 1;
                 add_to_pc = false;
+            }
+            Inst::LDA => {
+                let data = match address_mode {
+                    AddressMode::IMM => self.mem.read_byte(self.pc + 1),
+                    _ => {
+                        let addr = self.get_effective_address(&address_mode);
+                        self.mem.read_byte(addr)
+                    }
+                };
+                self.set_ac(data);
             }
 
             _ => unimplemented!(),
