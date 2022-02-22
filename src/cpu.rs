@@ -63,19 +63,18 @@ where
     /// on each cycle.
     ///
     /// # Arguments
-    ///
-    /// * `callable` - Closure that takes an immutable reference to the Cpu.  
+    /// * `step_callback` - Closure that takes an immutable reference to the `Cpu` and is called
+    /// before every instruction is executed.
     ///
     /// # Errors
-    ///
     /// Fails whenever fetching the next (valid) instruction fails.
-    pub fn run(mut self, callable: &mut dyn FnMut(&Cpu<M>)) -> Result<(), Error6502> {
+    pub fn run(mut self, step_callback: &mut dyn FnMut(&Cpu<M>)) -> Result<(), Error6502> {
         loop {
             // Loop until we encounter an unknown opcode
             if let Ok(OpMode(instruction, address_mode, _cycles)) = self.fetch_next_inst() {
+                step_callback(&self);
                 self.set_ir(instruction);
                 self.step_inst(instruction, address_mode)?;
-                callable(&self);
             } else {
                 break;
             }
