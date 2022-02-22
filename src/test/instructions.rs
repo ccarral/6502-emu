@@ -392,3 +392,11 @@ pub fn test_lda() {
     cpu.step_inst(Inst::LDA, AddressMode::IMM).unwrap();
     assert_eq!(cpu.ac(), 0x35);
 }
+
+#[test]
+pub fn test_ldx() {
+    let mut cpu = util::new_cpu_empty_mem();
+    cpu.write_to_mem(0x01, 0x35);
+    cpu.step_inst(Inst::LDX, AddressMode::IMM).unwrap();
+    assert_eq!(cpu.x(), 0x35);
+}
