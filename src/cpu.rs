@@ -620,6 +620,8 @@ where
                     }
                 };
                 self.set_ac(data);
+                self.update_z_flag_with(data);
+                self.update_n_flag_with(data);
             }
 
             _ => unimplemented!(),
