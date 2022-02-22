@@ -1,7 +1,7 @@
 # mini6502
 A lightweight and simple 6502 emulation library and CLI.
 
-![Build Status](https://github.com/ccarral/mini6502/workflows/ci.yml/badge.svg)
+![Build Status](https://github.com/ccarral/mini6502/actions/workflows/ci.yml/badge.svg)
 
 
 
