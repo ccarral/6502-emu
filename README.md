@@ -3,7 +3,7 @@ A lightweight and simple 6502 emulation library and CLI.
 
 [![Build Status][actions-badge]][actions-url]
 
-[actions-badge]: https://github.com/ccarral/mini6502/workflows/CI/badge.svg
+[actions-badge]: https://github.com/ccarral/mini6502/workflows/ci.yml/badge.svg
 [actions-url]: https://github.com/ccarral/mini6502/actions?query=workflow%3ACI+branch%3Amaster
 
 ## Implementation checklist
