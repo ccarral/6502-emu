@@ -396,7 +396,24 @@ pub fn test_lda() {
 #[test]
 pub fn test_ldx() {
     let mut cpu = util::new_cpu_empty_mem();
-    cpu.write_to_mem(0x01, 0x35);
-    cpu.step_inst(Inst::LDX, AddressMode::IMM).unwrap();
-    assert_eq!(cpu.x(), 0x35);
+    cpu.write_to_mem(0x0001, 0x35);
+    cpu.write_to_mem(0x0002, 0x37);
+    cpu.write_to_mem(0x3735, 0b1000_0000);
+    cpu.step_inst(Inst::LDX, AddressMode::ABS).unwrap();
+    assert_eq!(cpu.x(), 0b1000_0000);
+    assert!(cpu.n_flag());
+    assert!(!cpu.z_flag());
+}
+
+#[test]
+pub fn test_ldy() {
+    let mut cpu = util::new_cpu_empty_mem();
+    cpu.write_to_mem(0x0001, 0x35);
+    cpu.write_to_mem(0x0002, 0x37);
+    cpu.write_to_mem(0x3735, 0b0000_0000);
+    cpu.set_y(40);
+    cpu.step_inst(Inst::LDY, AddressMode::ABS).unwrap();
+    assert_eq!(cpu.y(), 0b0000_0000);
+    assert!(!cpu.n_flag());
+    assert!(cpu.z_flag());
 }

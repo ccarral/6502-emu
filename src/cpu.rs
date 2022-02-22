@@ -209,6 +209,10 @@ where
         self.x
     }
 
+    pub(crate) fn y(&self) -> u8 {
+        self.x
+    }
+
     pub(crate) fn pc(&self) -> u16 {
         self.pc
     }
@@ -636,6 +640,18 @@ where
                     }
                 };
                 self.set_x(data);
+                self.update_z_flag_with(data);
+                self.update_n_flag_with(data);
+            }
+            Inst::LDY => {
+                let data = match address_mode {
+                    AddressMode::IMM => self.mem.read_byte(self.pc + 1),
+                    _ => {
+                        let addr = self.get_effective_address(&address_mode);
+                        self.mem.read_byte(addr)
+                    }
+                };
+                self.set_y(data);
                 self.update_z_flag_with(data);
                 self.update_n_flag_with(data);
             }

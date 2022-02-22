@@ -1,15 +1,13 @@
 # mini6502
-A lightweight and simple 6502 emulation library and CLI.
-
 ![Build Status](https://github.com/ccarral/mini6502/actions/workflows/ci.yml/badge.svg)
 
-
+A lightweight and simple 6502 emulation library and CLI.
 
 ## Implementation checklist
 
 ## Registers
 
-* Status Register (Flags)
+Status Register (Flags)
   - [x] Negative flag (N)
   - [x] Overflow flag (V)
   - [x] Break flag (B)
@@ -50,8 +48,8 @@ A lightweight and simple 6502 emulation library and CLI.
 - [x] JMP
 - [x] JSR
 - [x] LDA
-- [ ] LDX
-- [ ] LDY
+- [x] LDX
+- [x] LDY
 - [ ] LSR
 - [ ] NOP
 - [ ] ORA

@@ -73,7 +73,7 @@ pub enum Inst {
     JSR,
     LDA,
     LDX,
-    Ldy,
+    LDY,
     Lsr,
     Nop,
     Ora,
