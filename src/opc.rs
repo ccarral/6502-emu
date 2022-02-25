@@ -22,6 +22,12 @@ pub const fn init_opc_array() -> [Option<OpMode>; 0xFF] {
     opc_arr[0x21] = Some(OpMode(Inst::AND, AddressMode::INDX, 6));
     opc_arr[0x31] = Some(OpMode(Inst::AND, AddressMode::INDY, 5));
 
+    opc_arr[0x0A] = Some(OpMode(Inst::ASL, AddressMode::ACC, 2));
+    opc_arr[0x06] = Some(OpMode(Inst::ASL, AddressMode::ZPG, 5));
+    opc_arr[0x16] = Some(OpMode(Inst::ASL, AddressMode::ZPGX, 6));
+    opc_arr[0x0E] = Some(OpMode(Inst::ASL, AddressMode::ABS, 6));
+    opc_arr[0x1E] = Some(OpMode(Inst::ASL, AddressMode::ABSX, 7));
+
     opc_arr[0x00] = Some(OpMode(Inst::BRK, AddressMode::IMPL, 0));
     opc_arr[0x01] = Some(OpMode(Inst::Ora, AddressMode::INDX, 6));
     opc_arr[0x05] = Some(OpMode(Inst::Ora, AddressMode::ZPG, 3));
