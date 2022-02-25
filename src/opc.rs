@@ -30,6 +30,8 @@ pub const fn init_opc_array() -> [Option<OpMode>; 0xFF] {
 
     opc_arr[0x90] = Some(OpMode(Inst::BCC, AddressMode::REL, 2));
 
+    opc_arr[0xB0] = Some(OpMode(Inst::BCS, AddressMode::REL, 2));
+
     opc_arr[0x00] = Some(OpMode(Inst::BRK, AddressMode::IMPL, 0));
     opc_arr[0x01] = Some(OpMode(Inst::Ora, AddressMode::INDX, 6));
     opc_arr[0x05] = Some(OpMode(Inst::Ora, AddressMode::ZPG, 3));
