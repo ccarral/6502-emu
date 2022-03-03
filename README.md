@@ -8,7 +8,7 @@ A lightweight and simple 6502 emulation library and CLI.
 
 ## Implementation checklist
 
-## Registers
+### Registers
 
 Status Register (Flags)
   - [x] Negative flag (N)
@@ -19,7 +19,7 @@ Status Register (Flags)
   - [x] Zero flag (Z)
   - [x] Carry flag (C)
 
-## Instructions
+### Instructions
 
 - [x] ADC
 - [x] AND
