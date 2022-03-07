@@ -1,6 +1,5 @@
 use crate::cpu::Cpu;
 use crate::memory::SimpleMemory;
-use asm6502::assemble;
 
 /// Combine bytes 0xHH and 0xLL into 0xHHLL
 #[inline]
@@ -56,18 +55,6 @@ pub const fn test_overflow(b1: u8, b2: u8) -> bool {
 
     // xor carry in and carry out from bit 7
     bit_7_carry_in ^ bit_7_carry_out
-}
-
-pub fn new_mem_with_asm(asm: &str) -> Result<SimpleMemory, String> {
-    let mut bin = Vec::new();
-    assemble(asm.as_bytes(), &mut bin)?;
-    Ok(SimpleMemory::from_rom(&bin))
-}
-
-pub fn new_cpu_with_asm(asm: &str) -> Result<Cpu<SimpleMemory>, String> {
-    let mem = new_mem_with_asm(asm)?;
-    let cpu = Cpu::with_mem(mem);
-    Ok(cpu)
 }
 
 pub fn new_cpu_empty_mem() -> Cpu<SimpleMemory> {
