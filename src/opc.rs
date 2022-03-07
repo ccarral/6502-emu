@@ -43,7 +43,29 @@ pub const fn init_opc_array() -> [Option<OpMode>; 0xFF] {
 
     opc_arr[0x10] = Some(OpMode(Inst::BPL, AddressMode::REL, 2));
 
-    opc_arr[0x00] = Some(OpMode(Inst::BRK, AddressMode::IMPL, 0));
+    opc_arr[0x00] = Some(OpMode(Inst::BRK, AddressMode::IMPL, 7));
+
+    opc_arr[0x50] = Some(OpMode(Inst::BVC, AddressMode::REL, 2));
+
+    opc_arr[0x70] = Some(OpMode(Inst::BVS, AddressMode::REL, 2));
+
+    opc_arr[0x18] = Some(OpMode(Inst::CLC, AddressMode::IMPL, 2));
+
+    opc_arr[0xD8] = Some(OpMode(Inst::CLD, AddressMode::IMPL, 2));
+
+    opc_arr[0x58] = Some(OpMode(Inst::CLI, AddressMode::IMPL, 2));
+
+    opc_arr[0xB8] = Some(OpMode(Inst::CLV, AddressMode::IMPL, 2));
+
+    opc_arr[0xC9] = Some(OpMode(Inst::CMP, AddressMode::IMM, 2));
+    opc_arr[0xC5] = Some(OpMode(Inst::CMP, AddressMode::ZPG, 3));
+    opc_arr[0xD5] = Some(OpMode(Inst::CMP, AddressMode::ZPGX, 4));
+    opc_arr[0xCD] = Some(OpMode(Inst::CMP, AddressMode::ABS, 4));
+    opc_arr[0xDD] = Some(OpMode(Inst::CMP, AddressMode::ABSX, 4));
+    opc_arr[0xD9] = Some(OpMode(Inst::CMP, AddressMode::ABSY, 4));
+    opc_arr[0xC1] = Some(OpMode(Inst::CMP, AddressMode::INDX, 6));
+    opc_arr[0xD1] = Some(OpMode(Inst::CMP, AddressMode::INDY, 5));
+
     opc_arr[0x01] = Some(OpMode(Inst::Ora, AddressMode::INDX, 6));
     opc_arr[0x05] = Some(OpMode(Inst::Ora, AddressMode::ZPG, 3));
     opc_arr[0x06] = Some(OpMode(Inst::ASL, AddressMode::ZPG, 0));
