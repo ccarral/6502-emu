@@ -1,40 +1,41 @@
-pub fn main() {
-    use clap::{Arg, ArgGroup, Command};
-    use mini6502::cpu::Cpu;
-    use mini6502::memory::SimpleMemory;
-
+use clap::{Arg, Command};
+use mini6502::cpu::Cpu;
+use mini6502::memory::SimpleMemory;
+use std::error::Error;
+use std::fs;
+pub fn main() -> Result<(), Box<dyn Error>> {
     let matches = Command::new("mini6502")
         .author("Carlos Carral")
-        .arg(Arg::new("asm").long("asm").short('a').value_name("FILE"))
-        .arg(Arg::new("bin").long("bin").short('b').value_name("FILE"))
-        .group(
-            ArgGroup::new("input")
-                .args(&["asm", "bin"])
-                .required(true)
-                .multiple(false),
+        .arg(Arg::new("bin").value_name("FILE"))
+        .arg(
+            Arg::new("step")
+                .long("--step")
+                .short('s')
+                .required(false)
+                .help("Step trough every instruction."),
         )
         .get_matches();
 
-    let (input_file, is_asm) = {
-        if let Some(asm_file) = matches.value_of("asm") {
-            (asm_file, true)
-        } else if let Some(bin_file) = matches.value_of("bin") {
-            (bin_file, false)
-        } else {
-            unreachable!();
+    let file_name = matches.value_of("bin").unwrap();
+
+    match fs::read(file_name) {
+        Ok(contents) => {
+            let mem = SimpleMemory::from_rom(&contents);
+            let cpu = Cpu::with_mem(mem);
+            let stdin = std::io::stdin();
+            let mut buf = String::new();
+
+            let mut callable = |cpu: &Cpu<SimpleMemory>| {
+                print!("\r{cpu}\n");
+                stdin.read_line(&mut buf).unwrap();
+            };
+            cpu.run(&mut callable)?;
+        }
+        Err(os_err_msg) => {
+            eprintln!("Error while opening file \"{file_name}\": {os_err_msg}");
+            std::process::exit(-1);
         }
     };
 
-    let mem = mini6502::util::new_mem_with_asm("ORA #$20\nORA#$45").unwrap();
-    let cpu = Cpu::with_mem(mem);
-
-    let stdin = std::io::stdin();
-    let mut buf = String::new();
-
-    let mut callable = |cpu: &Cpu<SimpleMemory>| {
-        print!("\r{cpu}\n");
-        stdin.read_line(&mut buf).unwrap();
-    };
-
-    // cpu.run(&mut callable).unwrap();
+    Ok(())
 }
