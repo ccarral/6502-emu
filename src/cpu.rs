@@ -667,6 +667,10 @@ where
                     self.write_to_mem(address, result);
                 }
             }
+            Inst::NOP => {
+                // TODO: enable asm features
+                // asm!("NOP");
+            }
             Inst::RTI => {
                 let p = self.stack_pop();
                 let pc_ll = self.stack_pop();

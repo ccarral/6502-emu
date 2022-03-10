@@ -135,6 +135,8 @@ pub fn init_opc_array() -> [Option<OpMode>; 0xFF] {
     add_to_opc_arr(0x4E, Inst::LSR, AddressMode::ABS, 6);
     add_to_opc_arr(0x5E, Inst::LSR, AddressMode::ABSX, 7);
 
+    add_to_opc_arr(0xEA, Inst::NOP, AddressMode::IMPL, 2);
+
     opc_arr
 }
 
@@ -173,7 +175,7 @@ pub enum Inst {
     LDX,
     LDY,
     LSR,
-    Nop,
+    NOP,
     Ora,
     Pha,
     Php,
