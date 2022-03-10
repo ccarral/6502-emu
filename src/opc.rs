@@ -39,7 +39,7 @@ pub fn init_opc_array() -> [Option<OpMode>; 0xFF] {
             // Check if bitmask is set
             if address_mode_bitmask & *checked_address_modes != 0 {
                 panic!(
-                    "Address mode {addr_mode:#?} already set for opc {opc:#02x}. Please check opc."
+                    "Address mode {addr_mode:#?} already set for inst {inst:#?}. Please check opc."
                 );
             } else {
                 *checked_address_modes |= address_mode_bitmask;
@@ -128,6 +128,15 @@ pub fn init_opc_array() -> [Option<OpMode>; 0xFF] {
     add_to_opc_arr(0xCA, Inst::DEX, AddressMode::IMPL, 2);
 
     add_to_opc_arr(0x88, Inst::DEY, AddressMode::IMPL, 2);
+
+    add_to_opc_arr(0x49, Inst::EOR, AddressMode::IMM, 2);
+    add_to_opc_arr(0x45, Inst::EOR, AddressMode::ZPG, 3);
+    add_to_opc_arr(0x55, Inst::EOR, AddressMode::ZPGX, 4);
+    add_to_opc_arr(0x4D, Inst::EOR, AddressMode::ABS, 4);
+    add_to_opc_arr(0x5D, Inst::EOR, AddressMode::ABSX, 4);
+    add_to_opc_arr(0x59, Inst::EOR, AddressMode::ABSY, 4);
+    add_to_opc_arr(0x41, Inst::EOR, AddressMode::INDX, 6);
+    add_to_opc_arr(0x51, Inst::EOR, AddressMode::INDY, 5);
 
     add_to_opc_arr(0x4A, Inst::LSR, AddressMode::ACC, 2);
     add_to_opc_arr(0x46, Inst::LSR, AddressMode::ZPG, 5);
