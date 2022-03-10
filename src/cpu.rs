@@ -69,9 +69,10 @@ where
     /// # Errors
     /// Fails whenever fetching the next (valid) instruction fails.
     pub fn run(mut self, step_callback: &mut dyn FnMut(&Cpu<M>)) -> Result<(), Error6502> {
+        let opc_arr = opc::init_opc_array();
         loop {
             // Loop until we encounter an unknown opcode
-            if let Ok(OpMode(instruction, address_mode, _cycles)) = self.fetch_next_inst() {
+            if let Ok(OpMode(instruction, address_mode, _cycles)) = self.fetch_next_inst(&opc_arr) {
                 step_callback(&self);
                 self.set_ir(instruction);
                 self.step_inst(instruction, address_mode)?;
@@ -246,10 +247,16 @@ where
         (self.p & C_FLAG_BITMASK) != 0
     }
 
-    pub(crate) fn fetch_next_inst(&self) -> Result<OpMode, Error6502> {
+    pub(crate) fn fetch_next_inst(
+        &self,
+        opc_arr: &[Option<OpMode>; 0xFF],
+    ) -> Result<OpMode, Error6502> {
+        // NOTE: we could define opc_arr as a global const, but then we miss initialization checks
+        // of opcode repetition, as we can't make init_opc_array() const.
+
         // Read byte at pc
         let byte = self.mem.read_byte(self.pc);
-        match opc::get_op_mode(byte) {
+        match opc_arr[byte as usize] {
             Some(op_mode) => Ok(op_mode),
             None => Err(Error6502::InvalidInstruction),
         }
