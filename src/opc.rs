@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 #[derive(Copy, Clone)]
 // (Instruction, AddressMode, cycles)
 pub struct OpMode(pub Inst, pub AddressMode, pub u8);
@@ -5,11 +7,44 @@ pub struct OpMode(pub Inst, pub AddressMode, pub u8);
 pub fn init_opc_array() -> [Option<OpMode>; 0xFF] {
     let mut opc_arr: [Option<OpMode>; 0xFF] = [None; 0xFF];
     let mut already_set: [bool; 0xFF] = [false; 0xFF];
+    let mut address_mode_already_set = HashMap::new();
+
+    // returns a bitmask according to addressing mode
+    fn addr_mode_bitmask(addr_mode: &AddressMode) -> u16 {
+        match addr_mode {
+            AddressMode::ACC => 1 << 0,
+            AddressMode::ABS => 1 << 1,
+            AddressMode::ABSX => 1 << 2,
+            AddressMode::ABSY => 1 << 3,
+            AddressMode::IMM => 1 << 4,
+            AddressMode::IMPL => 1 << 5,
+            AddressMode::IND => 1 << 6,
+            AddressMode::INDX => 1 << 7,
+            AddressMode::INDY => 1 << 8,
+            AddressMode::REL => 1 << 9,
+            AddressMode::ZPG => 1 << 10,
+            AddressMode::ZPGX => 1 << 11,
+            AddressMode::ZPGY => 1 << 12,
+        }
+    }
 
     let mut add_to_opc_arr = |opc: usize, inst: Inst, addr_mode: AddressMode, cycles: u8| {
         if already_set[opc] {
-            panic!("opc previously set. Please check opc.")
+            panic!("opc {opc:#02x} previously set for {inst:#?}. Please check opc.")
         } else {
+            // Check that this addressing mode has not been set previously for this instruction
+            let checked_address_modes = address_mode_already_set.entry(inst).or_insert(0u16);
+            let address_mode_bitmask = addr_mode_bitmask(&addr_mode);
+
+            // Check if bitmask is set
+            if address_mode_bitmask & *checked_address_modes != 0 {
+                panic!(
+                    "Address mode {addr_mode:#?} already set for opc {opc:#02x}. Please check opc."
+                );
+            } else {
+                *checked_address_modes |= address_mode_bitmask;
+            }
+
             opc_arr[opc] = Some(OpMode(inst, addr_mode, cycles));
             already_set[opc] = true;
         }
@@ -103,7 +138,7 @@ pub fn init_opc_array() -> [Option<OpMode>; 0xFF] {
     opc_arr
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Hash, Eq, PartialEq, Debug)]
 pub enum Inst {
     ADC,
     AND,
@@ -163,7 +198,7 @@ pub enum Inst {
     Tya,
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub enum AddressMode {
     ACC,
     ABS,
