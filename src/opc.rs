@@ -83,14 +83,11 @@ pub const fn init_opc_array() -> [Option<OpMode>; 0xFF] {
 
     opc_arr[0x88] = Some(OpMode(Inst::DEY, AddressMode::IMPL, 2));
 
-    opc_arr[0x01] = Some(OpMode(Inst::Ora, AddressMode::INDX, 6));
-    opc_arr[0x05] = Some(OpMode(Inst::Ora, AddressMode::ZPG, 3));
-    opc_arr[0x06] = Some(OpMode(Inst::ASL, AddressMode::ZPG, 0));
-    opc_arr[0x08] = Some(OpMode(Inst::Php, AddressMode::IMPL, 0));
-    opc_arr[0x09] = Some(OpMode(Inst::Ora, AddressMode::IMM, 2));
-    opc_arr[0x0A] = Some(OpMode(Inst::ASL, AddressMode::ACC, 0));
-    opc_arr[0x0D] = Some(OpMode(Inst::Ora, AddressMode::ABS, 4));
-    opc_arr[0x0E] = Some(OpMode(Inst::ASL, AddressMode::ABS, 0));
+    opc_arr[0x4A] = Some(OpMode(Inst::LSR, AddressMode::ACC, 2));
+    opc_arr[0x46] = Some(OpMode(Inst::LSR, AddressMode::ZPG, 5));
+    opc_arr[0x56] = Some(OpMode(Inst::LSR, AddressMode::ZPGX, 6));
+    opc_arr[0x4E] = Some(OpMode(Inst::LSR, AddressMode::ABS, 6));
+    opc_arr[0x5E] = Some(OpMode(Inst::LSR, AddressMode::ABSX, 7));
 
     opc_arr
 }
@@ -134,7 +131,7 @@ pub enum Inst {
     LDA,
     LDX,
     LDY,
-    Lsr,
+    LSR,
     Nop,
     Ora,
     Pha,

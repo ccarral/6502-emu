@@ -602,22 +602,6 @@ where
                 self.pc = addr;
                 add_to_pc = false;
             }
-            Inst::RTI => {
-                let p = self.stack_pop();
-                let pc_ll = self.stack_pop();
-                let pc_hh = self.stack_pop();
-                let pc = u16::from_be_bytes([pc_hh, pc_ll]);
-                self.p = p;
-                self.pc = pc;
-                add_to_pc = false;
-            }
-            Inst::RTS => {
-                let pc_ll = self.stack_pop();
-                let pc_hh = self.stack_pop();
-                let pc = u16::from_be_bytes([pc_ll, pc_hh]);
-                self.pc = pc + 1;
-                add_to_pc = false;
-            }
             Inst::LDA => {
                 let data = match address_mode {
                     AddressMode::IMM => self.mem.read_byte(self.pc + 1),
@@ -653,6 +637,44 @@ where
                 self.set_y(data);
                 self.update_z_flag_with(data);
                 self.update_n_flag_with(data);
+            }
+            Inst::LSR => {
+                let (is_acc, address, operand) = match address_mode {
+                    AddressMode::ACC => (true, 0x0000, self.ac),
+                    _ => {
+                        let addr = self.get_effective_address(&address_mode);
+                        let operand = self.mem.read_byte(addr);
+                        (false, addr, operand)
+                    }
+                };
+
+                // Set c flag if bit 0 of ac is set
+                self.write_c_flag(operand & 0b00000001 != 0);
+
+                let result = operand >> 1;
+                self.update_z_flag_with(result);
+
+                if is_acc {
+                    self.ac = result;
+                } else {
+                    self.write_to_mem(address, result);
+                }
+            }
+            Inst::RTI => {
+                let p = self.stack_pop();
+                let pc_ll = self.stack_pop();
+                let pc_hh = self.stack_pop();
+                let pc = u16::from_be_bytes([pc_hh, pc_ll]);
+                self.p = p;
+                self.pc = pc;
+                add_to_pc = false;
+            }
+            Inst::RTS => {
+                let pc_ll = self.stack_pop();
+                let pc_hh = self.stack_pop();
+                let pc = u16::from_be_bytes([pc_ll, pc_hh]);
+                self.pc = pc + 1;
+                add_to_pc = false;
             }
 
             _ => unimplemented!(),

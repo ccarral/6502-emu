@@ -417,3 +417,21 @@ pub fn test_ldy() {
     assert!(!cpu.n_flag());
     assert!(cpu.z_flag());
 }
+
+#[test]
+pub fn test_lsr() {
+    let mut cpu = util::new_cpu_empty_mem();
+    cpu.set_ac(0b11001010);
+    cpu.step_inst(Inst::LSR, AddressMode::ACC).unwrap();
+    assert_eq!(cpu.ac(), 0b01100101);
+    assert!(!cpu.c_flag());
+    assert!(!cpu.z_flag());
+
+    let mut cpu = util::new_cpu_empty_mem();
+    cpu.write_to_mem(0x0034, 0b00000001);
+    cpu.write_to_mem(0x0001, 0x34);
+    cpu.step_inst(Inst::LSR, AddressMode::ZPG).unwrap();
+    assert_eq!(cpu.read_byte_from_mem(0x0034), 0b00000000);
+    assert!(cpu.z_flag());
+    assert!(cpu.z_flag());
+}
