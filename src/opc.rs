@@ -66,6 +66,14 @@ pub const fn init_opc_array() -> [Option<OpMode>; 0xFF] {
     opc_arr[0xC1] = Some(OpMode(Inst::CMP, AddressMode::INDX, 6));
     opc_arr[0xD1] = Some(OpMode(Inst::CMP, AddressMode::INDY, 5));
 
+    opc_arr[0xE0] = Some(OpMode(Inst::CPX, AddressMode::IMM, 2));
+    opc_arr[0xE4] = Some(OpMode(Inst::CPX, AddressMode::ZPG, 3));
+    opc_arr[0xEC] = Some(OpMode(Inst::CPX, AddressMode::ABS, 4));
+
+    opc_arr[0xC0] = Some(OpMode(Inst::CPY, AddressMode::IMM, 2));
+    opc_arr[0xC4] = Some(OpMode(Inst::CPY, AddressMode::ZPG, 3));
+    opc_arr[0xCC] = Some(OpMode(Inst::CPY, AddressMode::ABS, 4));
+
     opc_arr[0x01] = Some(OpMode(Inst::Ora, AddressMode::INDX, 6));
     opc_arr[0x05] = Some(OpMode(Inst::Ora, AddressMode::ZPG, 3));
     opc_arr[0x06] = Some(OpMode(Inst::ASL, AddressMode::ZPG, 0));
