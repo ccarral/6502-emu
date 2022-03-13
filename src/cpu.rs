@@ -671,6 +671,24 @@ where
                 // TODO: enable asm features
                 // asm!("NOP");
             }
+            Inst::ORA => {
+                let data = {
+                    match address_mode {
+                        AddressMode::IMM => self.mem.read_byte(self.pc + 1),
+                        _ => {
+                            let addr = self.get_effective_address(&address_mode);
+                            self.mem.read_byte(addr)
+                        }
+                    }
+                };
+
+                let result = self.ac | data;
+
+                self.update_n_flag_with(result);
+                self.update_z_flag_with(result);
+
+                self.ac = result;
+            }
             Inst::RTI => {
                 let p = self.stack_pop();
                 let pc_ll = self.stack_pop();
