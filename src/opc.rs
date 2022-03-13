@@ -138,6 +138,11 @@ pub fn init_opc_array() -> [Option<OpMode>; 0xFF] {
     add_to_opc_arr(0x41, Inst::EOR, AddressMode::INDX, 6);
     add_to_opc_arr(0x51, Inst::EOR, AddressMode::INDY, 5);
 
+    add_to_opc_arr(0xE6, Inst::INC, AddressMode::ZPG, 5);
+    add_to_opc_arr(0xF6, Inst::INC, AddressMode::ZPGX, 6);
+    add_to_opc_arr(0xEE, Inst::INC, AddressMode::ABS, 6);
+    add_to_opc_arr(0xFE, Inst::INC, AddressMode::ABSX, 7);
+
     add_to_opc_arr(0x4A, Inst::LSR, AddressMode::ACC, 2);
     add_to_opc_arr(0x46, Inst::LSR, AddressMode::ZPG, 5);
     add_to_opc_arr(0x56, Inst::LSR, AddressMode::ZPGX, 6);
