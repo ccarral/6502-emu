@@ -54,7 +54,7 @@ Status Register (Flags)
 - [x] LDY
 - [x] LSR
 - [x] NOP
-- [ ] ORA
+- [x] ORA
 - [ ] PHA
 - [ ] PHP
 - [ ] PLA
