@@ -164,6 +164,8 @@ pub fn init_opc_array() -> [Option<OpMode>; 0xFF] {
     add_to_opc_arr(0x01, Inst::ORA, AddressMode::INDX, 6);
     add_to_opc_arr(0x11, Inst::ORA, AddressMode::INDY, 5);
 
+    add_to_opc_arr(0x48, Inst::PHA, AddressMode::IMPL, 3);
+
     opc_arr
 }
 
@@ -204,7 +206,7 @@ pub enum Inst {
     LSR,
     NOP,
     ORA,
-    Pha,
+    PHA,
     Php,
     Pla,
     Plp,

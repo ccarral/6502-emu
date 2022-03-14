@@ -689,6 +689,9 @@ where
 
                 self.ac = result;
             }
+            Inst::PHA => {
+                self.stack_push(self.ac);
+            }
             Inst::RTI => {
                 let p = self.stack_pop();
                 let pc_ll = self.stack_pop();
