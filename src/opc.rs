@@ -147,6 +147,9 @@ pub fn init_opc_array() -> [Option<OpMode>; 0xFF] {
 
     add_to_opc_arr(0xC8, Inst::INY, AddressMode::IMPL, 2);
 
+    add_to_opc_arr(0x4C, Inst::JMP, AddressMode::ABS, 3);
+    add_to_opc_arr(0x6C, Inst::JMP, AddressMode::IND, 5);
+
     add_to_opc_arr(0x4A, Inst::LSR, AddressMode::ACC, 2);
     add_to_opc_arr(0x46, Inst::LSR, AddressMode::ZPG, 5);
     add_to_opc_arr(0x56, Inst::LSR, AddressMode::ZPGX, 6);
@@ -165,6 +168,8 @@ pub fn init_opc_array() -> [Option<OpMode>; 0xFF] {
     add_to_opc_arr(0x11, Inst::ORA, AddressMode::INDY, 5);
 
     add_to_opc_arr(0x48, Inst::PHA, AddressMode::IMPL, 3);
+
+    add_to_opc_arr(0x08, Inst::PHP, AddressMode::IMPL, 3);
 
     opc_arr
 }
@@ -207,7 +212,7 @@ pub enum Inst {
     NOP,
     ORA,
     PHA,
-    Php,
+    PHP,
     Pla,
     Plp,
     Rol,
