@@ -205,6 +205,10 @@ where
         self.ac
     }
 
+    pub(crate) fn p(&self) -> u8 {
+        self.p
+    }
+
     pub(crate) fn x(&self) -> u8 {
         self.x
     }
@@ -700,6 +704,10 @@ where
                 self.ac = ac;
                 self.update_z_flag_with(ac);
                 self.update_n_flag_with(ac);
+            }
+            Inst::PLP => {
+                let p = self.stack_pop();
+                self.p = p;
             }
             Inst::RTI => {
                 let p = self.stack_pop();

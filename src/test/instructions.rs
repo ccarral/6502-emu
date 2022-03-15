@@ -458,10 +458,11 @@ pub fn test_pha_pla() {
 }
 
 #[test]
-pub fn test_php() {
+pub fn test_php_plp() {
     let mut cpu = util::new_cpu_empty_mem();
     cpu.or_flags(0b10101000);
     cpu.step_inst(Inst::PHP, AddressMode::IMPL).unwrap();
-    let val = cpu.stack_pop();
-    assert_eq!(val, 0b10101000);
+    cpu.or_flags(0xFF);
+    cpu.step_inst(Inst::PLP, AddressMode::IMPL).unwrap();
+    assert_eq!(cpu.p(), 0b10101000);
 }
