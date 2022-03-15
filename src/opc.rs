@@ -138,6 +138,18 @@ pub fn init_opc_array() -> [Option<OpMode>; 0xFF] {
     add_to_opc_arr(0x41, Inst::EOR, AddressMode::INDX, 6);
     add_to_opc_arr(0x51, Inst::EOR, AddressMode::INDY, 5);
 
+    add_to_opc_arr(0xE6, Inst::INC, AddressMode::ZPG, 5);
+    add_to_opc_arr(0xF6, Inst::INC, AddressMode::ZPGX, 6);
+    add_to_opc_arr(0xEE, Inst::INC, AddressMode::ABS, 6);
+    add_to_opc_arr(0xFE, Inst::INC, AddressMode::ABSX, 7);
+
+    add_to_opc_arr(0xE8, Inst::INX, AddressMode::IMPL, 2);
+
+    add_to_opc_arr(0xC8, Inst::INY, AddressMode::IMPL, 2);
+
+    add_to_opc_arr(0x4C, Inst::JMP, AddressMode::ABS, 3);
+    add_to_opc_arr(0x6C, Inst::JMP, AddressMode::IND, 5);
+
     add_to_opc_arr(0x4A, Inst::LSR, AddressMode::ACC, 2);
     add_to_opc_arr(0x46, Inst::LSR, AddressMode::ZPG, 5);
     add_to_opc_arr(0x56, Inst::LSR, AddressMode::ZPGX, 6);
@@ -145,6 +157,19 @@ pub fn init_opc_array() -> [Option<OpMode>; 0xFF] {
     add_to_opc_arr(0x5E, Inst::LSR, AddressMode::ABSX, 7);
 
     add_to_opc_arr(0xEA, Inst::NOP, AddressMode::IMPL, 2);
+
+    add_to_opc_arr(0x09, Inst::ORA, AddressMode::IMM, 2);
+    add_to_opc_arr(0x05, Inst::ORA, AddressMode::ZPG, 3);
+    add_to_opc_arr(0x15, Inst::ORA, AddressMode::ZPGX, 4);
+    add_to_opc_arr(0x0D, Inst::ORA, AddressMode::ABS, 4);
+    add_to_opc_arr(0x1D, Inst::ORA, AddressMode::ABSX, 4);
+    add_to_opc_arr(0x19, Inst::ORA, AddressMode::ABSY, 4);
+    add_to_opc_arr(0x01, Inst::ORA, AddressMode::INDX, 6);
+    add_to_opc_arr(0x11, Inst::ORA, AddressMode::INDY, 5);
+
+    add_to_opc_arr(0x48, Inst::PHA, AddressMode::IMPL, 3);
+
+    add_to_opc_arr(0x08, Inst::PHP, AddressMode::IMPL, 3);
 
     opc_arr
 }
@@ -185,9 +210,9 @@ pub enum Inst {
     LDY,
     LSR,
     NOP,
-    Ora,
-    Pha,
-    Php,
+    ORA,
+    PHA,
+    PHP,
     Pla,
     Plp,
     Rol,

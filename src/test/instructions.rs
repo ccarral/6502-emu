@@ -435,3 +435,32 @@ pub fn test_lsr() {
     assert!(cpu.z_flag());
     assert!(cpu.z_flag());
 }
+
+#[test]
+pub fn test_ora() {
+    let mut cpu = util::new_cpu_empty_mem();
+    cpu.set_ac(0b00100001);
+    cpu.write_to_mem(0x0001, 0b10000000);
+    cpu.step_inst(Inst::ORA, AddressMode::IMM).unwrap();
+    assert_eq!(cpu.ac(), 0b00100001 | 0b10000000);
+    assert!(!cpu.z_flag());
+    assert!(cpu.n_flag());
+}
+
+#[test]
+pub fn test_pha() {
+    let mut cpu = util::new_cpu_empty_mem();
+    cpu.set_ac(0x55);
+    cpu.step_inst(Inst::PHA, AddressMode::IMPL).unwrap();
+    let val = cpu.stack_pop();
+    assert_eq!(val, 0x55);
+}
+
+#[test]
+pub fn test_php() {
+    let mut cpu = util::new_cpu_empty_mem();
+    cpu.or_flags(0b10101000);
+    cpu.step_inst(Inst::PHP, AddressMode::IMPL).unwrap();
+    let val = cpu.stack_pop();
+    assert_eq!(val, 0b10101000);
+}
