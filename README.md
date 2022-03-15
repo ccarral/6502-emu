@@ -55,10 +55,10 @@ Status Register (Flags)
 - [x] LSR
 - [x] NOP
 - [x] ORA
-- [ ] PHA
-- [ ] PHP
-- [ ] PLA
-- [ ] PLP
+- [x] PHA
+- [x] PHP
+- [x] PLA
+- [x] PLP
 - [ ] ROL
 - [ ] ROR
 - [x] RTI
