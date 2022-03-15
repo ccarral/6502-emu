@@ -150,6 +150,8 @@ pub fn init_opc_array() -> [Option<OpMode>; 0xFF] {
     add_to_opc_arr(0x4C, Inst::JMP, AddressMode::ABS, 3);
     add_to_opc_arr(0x6C, Inst::JMP, AddressMode::IND, 5);
 
+    add_to_opc_arr(0x20, Inst::JSR, AddressMode::ABS, 6);
+
     add_to_opc_arr(0x4A, Inst::LSR, AddressMode::ACC, 2);
     add_to_opc_arr(0x46, Inst::LSR, AddressMode::ZPG, 5);
     add_to_opc_arr(0x56, Inst::LSR, AddressMode::ZPGX, 6);
