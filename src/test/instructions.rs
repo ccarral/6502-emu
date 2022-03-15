@@ -448,12 +448,13 @@ pub fn test_ora() {
 }
 
 #[test]
-pub fn test_pha() {
+pub fn test_pha_pla() {
     let mut cpu = util::new_cpu_empty_mem();
     cpu.set_ac(0x55);
     cpu.step_inst(Inst::PHA, AddressMode::IMPL).unwrap();
-    let val = cpu.stack_pop();
-    assert_eq!(val, 0x55);
+    cpu.set_ac(0x44);
+    cpu.step_inst(Inst::PLA, AddressMode::IMPL).unwrap();
+    assert_eq!(cpu.ac(), 0x55);
 }
 
 #[test]

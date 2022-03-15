@@ -695,6 +695,12 @@ where
             Inst::PHP => {
                 self.stack_push(self.p);
             }
+            Inst::PLA => {
+                let ac = self.stack_pop();
+                self.ac = ac;
+                self.update_z_flag_with(ac);
+                self.update_n_flag_with(ac);
+            }
             Inst::RTI => {
                 let p = self.stack_pop();
                 let pc_ll = self.stack_pop();
