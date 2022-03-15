@@ -479,3 +479,17 @@ pub fn test_rol() {
     assert_eq!(cpu.ac(), 0b0000_0110);
     assert!(cpu.c_flag());
 }
+
+#[test]
+pub fn test_ror() {
+    let mut cpu = util::new_cpu_empty_mem();
+    cpu.set_ac(0b0000_0010);
+    cpu.write_c_flag(true);
+    cpu.step_inst(Inst::ROR, AddressMode::ACC).unwrap();
+    assert!(!cpu.c_flag());
+    assert_eq!(cpu.ac(), 0b1000_0001);
+    assert!(cpu.n_flag());
+    cpu.step_inst(Inst::ROR, AddressMode::ACC).unwrap();
+    assert_eq!(cpu.ac(), 0b0100_0000);
+    assert!(cpu.c_flag());
+}
