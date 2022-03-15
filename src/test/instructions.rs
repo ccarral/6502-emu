@@ -466,3 +466,16 @@ pub fn test_php_plp() {
     cpu.step_inst(Inst::PLP, AddressMode::IMPL).unwrap();
     assert_eq!(cpu.p(), 0b10101000);
 }
+
+#[test]
+pub fn test_rol() {
+    let mut cpu = util::new_cpu_empty_mem();
+    cpu.set_ac(0b0100_0001);
+    cpu.write_c_flag(true);
+    cpu.step_inst(Inst::ROL, AddressMode::ACC).unwrap();
+    assert!(!cpu.c_flag());
+    assert_eq!(cpu.ac(), 0b1000_0011);
+    cpu.step_inst(Inst::ROL, AddressMode::ACC).unwrap();
+    assert_eq!(cpu.ac(), 0b0000_0110);
+    assert!(cpu.c_flag());
+}

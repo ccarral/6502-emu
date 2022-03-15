@@ -186,6 +186,12 @@ pub fn init_opc_array() -> [Option<OpMode>; 0xFF] {
 
     add_to_opc_arr(0x28, Inst::PLP, AddressMode::IMPL, 3);
 
+    add_to_opc_arr(0x2A, Inst::ROL, AddressMode::ACC, 2);
+    add_to_opc_arr(0x26, Inst::ROL, AddressMode::ZPG, 5);
+    add_to_opc_arr(0x36, Inst::ROL, AddressMode::ZPGX, 6);
+    add_to_opc_arr(0x2E, Inst::ROL, AddressMode::ABS, 6);
+    add_to_opc_arr(0x3E, Inst::ROL, AddressMode::ABSX, 7);
+
     opc_arr
 }
 
@@ -230,7 +236,7 @@ pub enum Inst {
     PHP,
     PLA,
     PLP,
-    Rol,
+    ROL,
     Ror,
     RTI,
     RTS,

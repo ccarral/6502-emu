@@ -709,6 +709,37 @@ where
                 let p = self.stack_pop();
                 self.p = p;
             }
+            Inst::ROL => {
+                let (is_memory, operand, address) = {
+                    match address_mode {
+                        AddressMode::ACC => {
+                            // Read accumulator
+                            (false, self.ac, 0x00)
+                        }
+                        _ => {
+                            let effective_addr = self.get_effective_address(&address_mode);
+                            (true, self.mem.read_byte(effective_addr), effective_addr)
+                        }
+                    }
+                };
+
+                let carry_out = 0b1000_0000 & operand != 0;
+                let mut result = operand << 1;
+
+                if self.c_flag() {
+                    result |= 0b0000_0001;
+                }
+
+                if is_memory {
+                    self.mem.write_byte(address, result);
+                } else {
+                    self.ac = result;
+                }
+
+                self.update_n_flag_with(result);
+                self.update_z_flag_with(result);
+                self.write_c_flag(carry_out);
+            }
             Inst::RTI => {
                 let p = self.stack_pop();
                 let pc_ll = self.stack_pop();
