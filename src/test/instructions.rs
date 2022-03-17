@@ -5,17 +5,20 @@ use crate::util;
 pub fn test_adc() {
     let mut cpu = util::new_cpu_empty_mem();
 
-    cpu.write_to_mem(0x0001, 0x69);
+    cpu.set_ac(0b01111111);
+    cpu.write_to_mem(0x0001, 0b00000001);
     cpu.step_inst(Inst::ADC, AddressMode::IMM).unwrap();
-    assert_eq!(cpu.ac(), 0x69);
+    assert_eq!(cpu.ac(), 0b10000000);
+    assert!(cpu.v_flag());
 
+    cpu.set_ac(0);
     cpu.write_to_mem(0x03, 0x63);
     cpu.write_to_mem(0x0063, 0x42);
     cpu.step_inst(Inst::ADC, AddressMode::ZPG).unwrap();
-    assert_eq!(cpu.ac(), 0xAB);
+    assert_eq!(cpu.ac(), 0x42);
+    assert!(!cpu.v_flag());
 
     cpu.set_ac(0);
-
     cpu.write_to_mem(0x0005, 0x33);
     cpu.write_to_mem(0x003A, 0x50);
     cpu.set_x(0x07);
@@ -493,3 +496,6 @@ pub fn test_ror() {
     assert_eq!(cpu.ac(), 0b0100_0000);
     assert!(cpu.c_flag());
 }
+
+#[test]
+pub fn test_sbc() {}
