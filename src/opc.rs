@@ -198,6 +198,17 @@ pub fn init_opc_array() -> [Option<OpMode>; 0xFF] {
     add_to_opc_arr(0x6E, Inst::ROR, AddressMode::ABS, 6);
     add_to_opc_arr(0x7E, Inst::ROR, AddressMode::ABSX, 7);
 
+    add_to_opc_arr(0x60, Inst::RTS, AddressMode::IMPL, 6);
+
+    add_to_opc_arr(0xE9, Inst::SBC, AddressMode::IMM, 2);
+    add_to_opc_arr(0xE5, Inst::SBC, AddressMode::ZPG, 3);
+    add_to_opc_arr(0xF5, Inst::SBC, AddressMode::ZPGX, 4);
+    add_to_opc_arr(0xED, Inst::SBC, AddressMode::ABS, 4);
+    add_to_opc_arr(0xFD, Inst::SBC, AddressMode::ABSX, 4);
+    add_to_opc_arr(0xF9, Inst::SBC, AddressMode::ABSY, 4);
+    add_to_opc_arr(0xE1, Inst::SBC, AddressMode::INDX, 6);
+    add_to_opc_arr(0xF1, Inst::SBC, AddressMode::INDY, 5);
+
     opc_arr
 }
 
@@ -246,7 +257,7 @@ pub enum Inst {
     ROR,
     RTI,
     RTS,
-    Sbc,
+    SBC,
     Sec,
     Sed,
     Sei,

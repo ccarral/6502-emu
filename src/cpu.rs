@@ -787,6 +787,63 @@ where
                 self.pc = pc + 1;
                 add_to_pc = false;
             }
+            Inst::SBC => {
+                let data = {
+                    match address_mode {
+                        AddressMode::IMM => self.mem.read_byte(self.pc + 1),
+                        _ => {
+                            let addr = self.get_effective_address(&address_mode);
+                            self.mem.read_byte(addr)
+                        }
+                    }
+                };
+
+                if self.d_flag() {
+                    // TODO: implement bcd mode
+                    unimplemented!();
+                } else {
+                    let ac_signed = {
+                        let ac_bytes = self.ac.to_be_bytes();
+                        i8::from_be_bytes(ac_bytes)
+                    };
+
+                    let data_signed = {
+                        let data_bytes = data.to_be_bytes();
+                        i8::from_be_bytes(data_bytes)
+                    };
+
+                    let data_signed_neg_u8 = {
+                        let data_signed_neg = -data_signed;
+                        let data_signed_neg_bytes = data_signed_neg.to_be_bytes();
+                        u8::from_be_bytes(data_signed_neg_bytes)
+                    };
+
+                    let (result_1, overflow_1) = ac_signed.overflowing_sub(data_signed);
+
+                    let (_, carry_1) = self.ac.overflowing_add(data_signed_neg_u8);
+
+                    let result_1_u8 = {
+                        let bytes = result_1.to_be_bytes();
+                        u8::from_be_bytes(bytes)
+                    };
+
+                    let (result_2, overflow_2) =
+                        result_1.overflowing_sub(if self.c_flag() { 0 } else { 1 });
+
+                    let (_result_2_u8, carry_2) =
+                        result_1_u8.overflowing_add(if self.c_flag() { 0 } else { 1 });
+
+                    let result_bytes = result_2.to_be_bytes();
+
+                    self.ac = u8::from_be_bytes(result_bytes);
+                    // self.ac = result_2_u8;
+
+                    self.update_n_flag_with(self.ac);
+                    self.write_v_flag(overflow_1 || overflow_2);
+                    self.update_z_flag_with(self.ac);
+                    self.write_c_flag(carry_1 || carry_2);
+                }
+            }
 
             _ => unimplemented!(),
         }

@@ -498,4 +498,34 @@ pub fn test_ror() {
 }
 
 #[test]
-pub fn test_sbc() {}
+pub fn test_sbc() {
+    let mut cpu = util::new_cpu_empty_mem();
+
+    // -128 - 1 = -129, returns V = 1
+    cpu.write_c_flag(true);
+    cpu.set_ac(0x80);
+    cpu.write_to_mem(0x0001, 0x01);
+    cpu.step_inst(Inst::SBC, AddressMode::IMM).unwrap();
+    assert!(cpu.v_flag());
+    assert!(cpu.c_flag());
+    assert_eq!(cpu.ac(), 0x7F);
+
+    //127 - -1 = 128, returns V = 1
+    cpu.write_c_flag(true);
+    cpu.write_v_flag(false);
+    cpu.set_ac(0x7F);
+    cpu.write_to_mem(0x0003, 0xFF);
+    cpu.step_inst(Inst::SBC, AddressMode::IMM).unwrap();
+    assert!(cpu.v_flag());
+    assert!(!cpu.c_flag());
+    assert_eq!(cpu.ac(), 0x80);
+
+    cpu.set_ac(0xC0);
+    cpu.write_c_flag(false);
+    cpu.write_v_flag(false);
+    cpu.write_to_mem(0x0005, 0x40);
+    cpu.step_inst(Inst::SBC, AddressMode::IMM).unwrap();
+    assert!(cpu.v_flag());
+    assert!(cpu.c_flag());
+    assert_eq!(cpu.ac(), 0x7F);
+}

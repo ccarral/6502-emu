@@ -1,3 +1,4 @@
+#![feature(bigint_helper_methods)]
 pub mod bcd;
 pub mod cpu;
 pub mod error;
