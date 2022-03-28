@@ -5,32 +5,27 @@ use crate::util;
 pub fn test_adc() {
     let mut cpu = util::new_cpu_empty_mem();
 
-    cpu.set_ac(0b01111111);
-    cpu.write_to_mem(0x0001, 0b00000001);
+    cpu.write_c_flag(false);
+    cpu.set_ac(0x01);
+    cpu.write_to_mem(0x0001, 0xFF);
     cpu.step_inst(Inst::ADC, AddressMode::IMM).unwrap();
-    assert_eq!(cpu.ac(), 0b10000000);
+    assert!(cpu.c_flag());
+    assert_eq!(cpu.ac(), 0);
+
+    cpu.write_c_flag(false);
+    cpu.set_ac(0x80);
+    cpu.write_to_mem(0x0003, 0xFF);
+    cpu.step_inst(Inst::ADC, AddressMode::IMM).unwrap();
+    assert_eq!(cpu.ac(), 0x7F);
+    assert!(cpu.c_flag());
+
+    cpu.write_c_flag(true);
+    cpu.set_ac(0x3F);
+    assert_eq!(cpu.pc(), 0x0004);
+    cpu.write_to_mem(0x0005, 0x40);
+    cpu.step_inst(Inst::ADC, AddressMode::IMM).unwrap();
     assert!(cpu.v_flag());
-
-    cpu.set_ac(0);
-    cpu.write_to_mem(0x03, 0x63);
-    cpu.write_to_mem(0x0063, 0x42);
-    cpu.step_inst(Inst::ADC, AddressMode::ZPG).unwrap();
-    assert_eq!(cpu.ac(), 0x42);
-    assert!(!cpu.v_flag());
-
-    cpu.set_ac(0);
-    cpu.write_to_mem(0x0005, 0x33);
-    cpu.write_to_mem(0x003A, 0x50);
-    cpu.set_x(0x07);
-    cpu.step_inst(Inst::ADC, AddressMode::ZPGX).unwrap();
-    assert_eq!(cpu.ac(), 0x50);
-
-    cpu.set_ac(0);
-    cpu.write_to_mem(0x0007, 0xFF);
-    cpu.set_y(0x01);
-    cpu.step_inst(Inst::ADC, AddressMode::ZPGY).unwrap();
-    assert_eq!(cpu.ac(), 0x00);
-    assert!(cpu.z_flag());
+    assert_eq!(cpu.ac(), 0x80);
 }
 
 #[test]

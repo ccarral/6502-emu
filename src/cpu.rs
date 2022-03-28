@@ -275,7 +275,7 @@ where
         let mut add_to_pc = true;
         match inst {
             Inst::ADC => {
-                let operand = {
+                let data = {
                     match address_mode {
                         AddressMode::IMM => {
                             // Read immediate byte
@@ -290,15 +290,30 @@ where
 
                 let result = if self.d_flag() {
                     // Operate in bcd mode
-                    let result = bcd::bcd_add_u8(self.ac, operand);
+                    let result = bcd::bcd_add_u8(self.ac, data);
                     let carry = result > 0b1001_1001;
                     self.write_c_flag(carry);
                     result
                 } else {
-                    let (result, carry) = u8::overflowing_add(self.ac, operand);
+                    let ac = self.ac;
+                    let ac_signed = {
+                        let bytes = ac.to_be_bytes();
+                        i8::from_be_bytes(bytes)
+                    };
+
+                    let data_signed = {
+                        let bytes = data.to_be_bytes();
+                        i8::from_be_bytes(bytes)
+                    };
+
+                    dbg!(ac_signed, data_signed);
+
+                    let (res_1, overflow_1) = ac_signed.overflowing_add(data_signed);
+                    let (_res_2, overflow_2) =
+                        res_1.overflowing_add(if self.c_flag() { 1 } else { 0 });
+                    let (result, carry) = dbg!(ac.carrying_add(data, self.c_flag()));
                     self.write_c_flag(carry);
-                    let overflow = util::test_overflow(self.ac, operand);
-                    self.write_v_flag(overflow);
+                    self.write_v_flag(overflow_1 || overflow_2);
                     result
                 };
 
