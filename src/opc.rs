@@ -209,6 +209,8 @@ pub fn init_opc_array() -> [Option<OpMode>; 0xFF] {
     add_to_opc_arr(0xE1, Inst::SBC, AddressMode::INDX, 6);
     add_to_opc_arr(0xF1, Inst::SBC, AddressMode::INDY, 5);
 
+    add_to_opc_arr(0x38, Inst::SEC, AddressMode::IMPL, 2);
+
     opc_arr
 }
 
@@ -258,7 +260,7 @@ pub enum Inst {
     RTI,
     RTS,
     SBC,
-    Sec,
+    SEC,
     Sed,
     Sei,
     Sta,

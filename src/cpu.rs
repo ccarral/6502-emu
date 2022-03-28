@@ -859,6 +859,9 @@ where
                     self.write_c_flag(carry_1 || carry_2);
                 }
             }
+            Inst::SEC => {
+                self.write_c_flag(true);
+            }
 
             _ => unimplemented!(),
         }
