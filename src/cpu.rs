@@ -851,7 +851,6 @@ where
                     let result_bytes = result_2.to_be_bytes();
 
                     self.ac = u8::from_be_bytes(result_bytes);
-                    // self.ac = result_2_u8;
 
                     self.update_n_flag_with(self.ac);
                     self.write_v_flag(overflow_1 || overflow_2);
@@ -872,6 +871,11 @@ where
                 let address = self.get_effective_address(&address_mode);
                 let ac = self.ac;
                 self.write_to_mem(address, ac);
+            }
+            Inst::STX => {
+                let address = self.get_effective_address(&address_mode);
+                let x = self.x;
+                self.write_to_mem(address, x);
             }
 
             _ => unimplemented!(),

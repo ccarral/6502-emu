@@ -557,3 +557,13 @@ fn test_sta() {
     cpu.step_inst(Inst::STA, AddressMode::ZPG).unwrap();
     assert_eq!(cpu.read_byte_from_mem(0x00F8), 0xF1);
 }
+
+#[test]
+fn test_stx() {
+    let mut cpu = util::new_cpu_empty_mem();
+    cpu.write_to_mem(0x0001, 0xF8);
+    cpu.write_to_mem(0x0002, 0x03);
+    cpu.set_x(0xF1);
+    cpu.step_inst(Inst::STX, AddressMode::ABS).unwrap();
+    assert_eq!(cpu.read_byte_from_mem(0x03F8), 0xF1);
+}
