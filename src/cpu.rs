@@ -877,6 +877,11 @@ where
                 let x = self.x;
                 self.write_to_mem(address, x);
             }
+            Inst::STY => {
+                let address = self.get_effective_address(&address_mode);
+                let y = self.y;
+                self.write_to_mem(address, y);
+            }
 
             _ => unimplemented!(),
         }
