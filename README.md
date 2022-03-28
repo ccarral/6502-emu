@@ -14,7 +14,7 @@ Status Register (Flags)
   - [x] Overflow flag (V)
   - [x] Break flag (B)
   - [ ] Decimal (D)
-  - [ ] Interrupt (I)
+  - [x] Interrupt (I)
   - [x] Zero flag (Z)
   - [x] Carry flag (C)
 
@@ -55,21 +55,21 @@ Status Register (Flags)
 - [x] LSR
 - [x] NOP
 - [x] ORA
-- [ ] PHA
-- [ ] PHP
-- [ ] PLA
-- [ ] PLP
-- [ ] ROL
-- [ ] ROR
+- [x] PHA
+- [x] PHP
+- [x] PLA
+- [x] PLP
+- [x] ROL
+- [x] ROR
 - [x] RTI
 - [x] RTS
-- [ ] SBC
-- [ ] SEC
-- [ ] SED
-- [ ] SEI
-- [ ] STA
-- [ ] STX
-- [ ] STY
+- [x] SBC
+- [x] SEC
+- [x] SED
+- [x] SEI
+- [x] STA
+- [x] STX
+- [x] STY
 - [ ] TAX
 - [ ] TAY
 - [ ] TSX

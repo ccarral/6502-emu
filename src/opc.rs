@@ -10,7 +10,7 @@ pub fn init_opc_array() -> [Option<OpMode>; 0xFF] {
     let mut address_mode_already_set = HashMap::new();
 
     // returns a bitmask according to addressing mode
-    fn addr_mode_bitmask(addr_mode: &AddressMode) -> u16 {
+    const fn addr_mode_bitmask(addr_mode: &AddressMode) -> u16 {
         match addr_mode {
             AddressMode::ACC => 1 << 0,
             AddressMode::ABS => 1 << 1,
@@ -150,6 +150,17 @@ pub fn init_opc_array() -> [Option<OpMode>; 0xFF] {
     add_to_opc_arr(0x4C, Inst::JMP, AddressMode::ABS, 3);
     add_to_opc_arr(0x6C, Inst::JMP, AddressMode::IND, 5);
 
+    add_to_opc_arr(0x20, Inst::JSR, AddressMode::ABS, 6);
+
+    add_to_opc_arr(0xA9, Inst::LDA, AddressMode::IMM, 2);
+    add_to_opc_arr(0xA5, Inst::LDA, AddressMode::ZPG, 3);
+    add_to_opc_arr(0xB5, Inst::LDA, AddressMode::ZPGX, 6);
+    add_to_opc_arr(0xAD, Inst::LDA, AddressMode::ABS, 6);
+    add_to_opc_arr(0xBD, Inst::LDA, AddressMode::ABSX, 6);
+    add_to_opc_arr(0xB9, Inst::LDA, AddressMode::ABSY, 6);
+    add_to_opc_arr(0xA1, Inst::LDA, AddressMode::INDX, 6);
+    add_to_opc_arr(0xB1, Inst::LDA, AddressMode::INDY, 6);
+
     add_to_opc_arr(0x4A, Inst::LSR, AddressMode::ACC, 2);
     add_to_opc_arr(0x46, Inst::LSR, AddressMode::ZPG, 5);
     add_to_opc_arr(0x56, Inst::LSR, AddressMode::ZPGX, 6);
@@ -170,6 +181,55 @@ pub fn init_opc_array() -> [Option<OpMode>; 0xFF] {
     add_to_opc_arr(0x48, Inst::PHA, AddressMode::IMPL, 3);
 
     add_to_opc_arr(0x08, Inst::PHP, AddressMode::IMPL, 3);
+
+    add_to_opc_arr(0x68, Inst::PLA, AddressMode::IMPL, 3);
+
+    add_to_opc_arr(0x28, Inst::PLP, AddressMode::IMPL, 3);
+
+    add_to_opc_arr(0x2A, Inst::ROL, AddressMode::ACC, 2);
+    add_to_opc_arr(0x26, Inst::ROL, AddressMode::ZPG, 5);
+    add_to_opc_arr(0x36, Inst::ROL, AddressMode::ZPGX, 6);
+    add_to_opc_arr(0x2E, Inst::ROL, AddressMode::ABS, 6);
+    add_to_opc_arr(0x3E, Inst::ROL, AddressMode::ABSX, 7);
+
+    add_to_opc_arr(0x6A, Inst::ROR, AddressMode::ACC, 2);
+    add_to_opc_arr(0x66, Inst::ROR, AddressMode::ZPG, 5);
+    add_to_opc_arr(0x76, Inst::ROR, AddressMode::ZPGX, 6);
+    add_to_opc_arr(0x6E, Inst::ROR, AddressMode::ABS, 6);
+    add_to_opc_arr(0x7E, Inst::ROR, AddressMode::ABSX, 7);
+
+    add_to_opc_arr(0x60, Inst::RTS, AddressMode::IMPL, 6);
+
+    add_to_opc_arr(0xE9, Inst::SBC, AddressMode::IMM, 2);
+    add_to_opc_arr(0xE5, Inst::SBC, AddressMode::ZPG, 3);
+    add_to_opc_arr(0xF5, Inst::SBC, AddressMode::ZPGX, 4);
+    add_to_opc_arr(0xED, Inst::SBC, AddressMode::ABS, 4);
+    add_to_opc_arr(0xFD, Inst::SBC, AddressMode::ABSX, 4);
+    add_to_opc_arr(0xF9, Inst::SBC, AddressMode::ABSY, 4);
+    add_to_opc_arr(0xE1, Inst::SBC, AddressMode::INDX, 6);
+    add_to_opc_arr(0xF1, Inst::SBC, AddressMode::INDY, 5);
+
+    add_to_opc_arr(0x38, Inst::SEC, AddressMode::IMPL, 2);
+
+    add_to_opc_arr(0xF8, Inst::SED, AddressMode::IMPL, 2);
+
+    add_to_opc_arr(0x78, Inst::SEI, AddressMode::IMPL, 2);
+
+    add_to_opc_arr(0x85, Inst::STA, AddressMode::ZPG, 3);
+    add_to_opc_arr(0x95, Inst::STA, AddressMode::ZPGX, 4);
+    add_to_opc_arr(0x8D, Inst::STA, AddressMode::ABS, 4);
+    add_to_opc_arr(0x9D, Inst::STA, AddressMode::ABSX, 5);
+    add_to_opc_arr(0x99, Inst::STA, AddressMode::ABSY, 5);
+    add_to_opc_arr(0x81, Inst::STA, AddressMode::INDX, 6);
+    add_to_opc_arr(0x91, Inst::STA, AddressMode::INDY, 6);
+
+    add_to_opc_arr(0x86, Inst::STX, AddressMode::ZPG, 3);
+    add_to_opc_arr(0x96, Inst::STX, AddressMode::ZPGY, 4);
+    add_to_opc_arr(0x8E, Inst::STX, AddressMode::ABS, 4);
+
+    add_to_opc_arr(0x84, Inst::STY, AddressMode::ZPG, 3);
+    add_to_opc_arr(0x94, Inst::STY, AddressMode::ZPGY, 4);
+    add_to_opc_arr(0x8C, Inst::STY, AddressMode::ABS, 4);
 
     opc_arr
 }
@@ -213,19 +273,19 @@ pub enum Inst {
     ORA,
     PHA,
     PHP,
-    Pla,
-    Plp,
-    Rol,
-    Ror,
+    PLA,
+    PLP,
+    ROL,
+    ROR,
     RTI,
     RTS,
-    Sbc,
-    Sec,
-    Sed,
-    Sei,
-    Sta,
-    Stx,
-    Sty,
+    SBC,
+    SEC,
+    SED,
+    SEI,
+    STA,
+    STX,
+    STY,
     Tax,
     Tay,
     Tsx,

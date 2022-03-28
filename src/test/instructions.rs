@@ -5,29 +5,27 @@ use crate::util;
 pub fn test_adc() {
     let mut cpu = util::new_cpu_empty_mem();
 
-    cpu.write_to_mem(0x0001, 0x69);
+    cpu.write_c_flag(false);
+    cpu.set_ac(0x01);
+    cpu.write_to_mem(0x0001, 0xFF);
     cpu.step_inst(Inst::ADC, AddressMode::IMM).unwrap();
-    assert_eq!(cpu.ac(), 0x69);
+    assert!(cpu.c_flag());
+    assert_eq!(cpu.ac(), 0);
 
-    cpu.write_to_mem(0x03, 0x63);
-    cpu.write_to_mem(0x0063, 0x42);
-    cpu.step_inst(Inst::ADC, AddressMode::ZPG).unwrap();
-    assert_eq!(cpu.ac(), 0xAB);
+    cpu.write_c_flag(false);
+    cpu.set_ac(0x80);
+    cpu.write_to_mem(0x0003, 0xFF);
+    cpu.step_inst(Inst::ADC, AddressMode::IMM).unwrap();
+    assert_eq!(cpu.ac(), 0x7F);
+    assert!(cpu.c_flag());
 
-    cpu.set_ac(0);
-
-    cpu.write_to_mem(0x0005, 0x33);
-    cpu.write_to_mem(0x003A, 0x50);
-    cpu.set_x(0x07);
-    cpu.step_inst(Inst::ADC, AddressMode::ZPGX).unwrap();
-    assert_eq!(cpu.ac(), 0x50);
-
-    cpu.set_ac(0);
-    cpu.write_to_mem(0x0007, 0xFF);
-    cpu.set_y(0x01);
-    cpu.step_inst(Inst::ADC, AddressMode::ZPGY).unwrap();
-    assert_eq!(cpu.ac(), 0x00);
-    assert!(cpu.z_flag());
+    cpu.write_c_flag(true);
+    cpu.set_ac(0x3F);
+    assert_eq!(cpu.pc(), 0x0004);
+    cpu.write_to_mem(0x0005, 0x40);
+    cpu.step_inst(Inst::ADC, AddressMode::IMM).unwrap();
+    assert!(cpu.v_flag());
+    assert_eq!(cpu.ac(), 0x80);
 }
 
 #[test]
@@ -448,19 +446,134 @@ pub fn test_ora() {
 }
 
 #[test]
-pub fn test_pha() {
+pub fn test_pha_pla() {
     let mut cpu = util::new_cpu_empty_mem();
     cpu.set_ac(0x55);
     cpu.step_inst(Inst::PHA, AddressMode::IMPL).unwrap();
-    let val = cpu.stack_pop();
-    assert_eq!(val, 0x55);
+    cpu.set_ac(0x44);
+    cpu.step_inst(Inst::PLA, AddressMode::IMPL).unwrap();
+    assert_eq!(cpu.ac(), 0x55);
 }
 
 #[test]
-pub fn test_php() {
+pub fn test_php_plp() {
     let mut cpu = util::new_cpu_empty_mem();
     cpu.or_flags(0b10101000);
     cpu.step_inst(Inst::PHP, AddressMode::IMPL).unwrap();
-    let val = cpu.stack_pop();
-    assert_eq!(val, 0b10101000);
+    cpu.or_flags(0xFF);
+    cpu.step_inst(Inst::PLP, AddressMode::IMPL).unwrap();
+    assert_eq!(cpu.p(), 0b10101000);
+}
+
+#[test]
+pub fn test_rol() {
+    let mut cpu = util::new_cpu_empty_mem();
+    cpu.set_ac(0b0100_0001);
+    cpu.write_c_flag(true);
+    cpu.step_inst(Inst::ROL, AddressMode::ACC).unwrap();
+    assert!(!cpu.c_flag());
+    assert_eq!(cpu.ac(), 0b1000_0011);
+    cpu.step_inst(Inst::ROL, AddressMode::ACC).unwrap();
+    assert_eq!(cpu.ac(), 0b0000_0110);
+    assert!(cpu.c_flag());
+}
+
+#[test]
+pub fn test_ror() {
+    let mut cpu = util::new_cpu_empty_mem();
+    cpu.set_ac(0b0000_0010);
+    cpu.write_c_flag(true);
+    cpu.step_inst(Inst::ROR, AddressMode::ACC).unwrap();
+    assert!(!cpu.c_flag());
+    assert_eq!(cpu.ac(), 0b1000_0001);
+    assert!(cpu.n_flag());
+    cpu.step_inst(Inst::ROR, AddressMode::ACC).unwrap();
+    assert_eq!(cpu.ac(), 0b0100_0000);
+    assert!(cpu.c_flag());
+}
+
+#[test]
+pub fn test_sbc() {
+    let mut cpu = util::new_cpu_empty_mem();
+
+    // -128 - 1 = -129, returns V = 1
+    cpu.write_c_flag(true);
+    cpu.set_ac(0x80);
+    cpu.write_to_mem(0x0001, 0x01);
+    cpu.step_inst(Inst::SBC, AddressMode::IMM).unwrap();
+    assert!(cpu.v_flag());
+    assert!(cpu.c_flag());
+    assert_eq!(cpu.ac(), 0x7F);
+
+    //127 - -1 = 128, returns V = 1
+    cpu.write_c_flag(true);
+    cpu.write_v_flag(false);
+    cpu.set_ac(0x7F);
+    cpu.write_to_mem(0x0003, 0xFF);
+    cpu.step_inst(Inst::SBC, AddressMode::IMM).unwrap();
+    assert!(cpu.v_flag());
+    assert!(!cpu.c_flag());
+    assert_eq!(cpu.ac(), 0x80);
+
+    cpu.set_ac(0xC0);
+    cpu.write_c_flag(false);
+    cpu.write_v_flag(false);
+    cpu.write_to_mem(0x0005, 0x40);
+    cpu.step_inst(Inst::SBC, AddressMode::IMM).unwrap();
+    assert!(cpu.v_flag());
+    assert!(cpu.c_flag());
+    assert_eq!(cpu.ac(), 0x7F);
+}
+
+#[test]
+fn test_sec() {
+    let mut cpu = util::new_cpu_empty_mem();
+    assert!(!cpu.c_flag());
+    cpu.step_inst(Inst::SEC, AddressMode::IMPL).unwrap();
+    assert!(cpu.c_flag());
+}
+
+#[test]
+fn test_sed() {
+    let mut cpu = util::new_cpu_empty_mem();
+    assert!(!cpu.d_flag());
+    cpu.step_inst(Inst::SED, AddressMode::IMPL).unwrap();
+    assert!(cpu.d_flag());
+}
+
+#[test]
+fn test_sei() {
+    let mut cpu = util::new_cpu_empty_mem();
+    assert!(!cpu.i_flag());
+    cpu.step_inst(Inst::SEI, AddressMode::IMPL).unwrap();
+    assert!(cpu.i_flag());
+}
+
+#[test]
+fn test_sta() {
+    let mut cpu = util::new_cpu_empty_mem();
+    cpu.write_to_mem(0x0001, 0xF8);
+    cpu.set_ac(0xF1);
+    cpu.step_inst(Inst::STA, AddressMode::ZPG).unwrap();
+    assert_eq!(cpu.read_byte_from_mem(0x00F8), 0xF1);
+}
+
+#[test]
+fn test_stx() {
+    let mut cpu = util::new_cpu_empty_mem();
+    cpu.write_to_mem(0x0001, 0xF8);
+    cpu.write_to_mem(0x0002, 0x03);
+    cpu.set_x(0xF1);
+    cpu.step_inst(Inst::STX, AddressMode::ABS).unwrap();
+    assert_eq!(cpu.read_byte_from_mem(0x03F8), 0xF1);
+}
+
+#[test]
+fn test_sty() {
+    let mut cpu = util::new_cpu_empty_mem();
+    cpu.write_to_mem(0x0001, 0xE8);
+    cpu.write_to_mem(0x0002, 0x04);
+    cpu.set_y(0xF1);
+    cpu.step_inst(Inst::STY, AddressMode::ABS).unwrap();
+    assert_eq!(cpu.read_byte_from_mem(0x04E8), 0xF1);
 }

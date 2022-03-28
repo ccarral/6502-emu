@@ -205,6 +205,10 @@ where
         self.ac
     }
 
+    pub(crate) fn p(&self) -> u8 {
+        self.p
+    }
+
     pub(crate) fn x(&self) -> u8 {
         self.x
     }
@@ -271,7 +275,7 @@ where
         let mut add_to_pc = true;
         match inst {
             Inst::ADC => {
-                let operand = {
+                let data = {
                     match address_mode {
                         AddressMode::IMM => {
                             // Read immediate byte
@@ -286,15 +290,30 @@ where
 
                 let result = if self.d_flag() {
                     // Operate in bcd mode
-                    let result = bcd::bcd_add_u8(self.ac, operand);
+                    let result = bcd::bcd_add_u8(self.ac, data);
                     let carry = result > 0b1001_1001;
                     self.write_c_flag(carry);
                     result
                 } else {
-                    let (result, carry) = u8::overflowing_add(self.ac, operand);
+                    let ac = self.ac;
+                    let ac_signed = {
+                        let bytes = ac.to_be_bytes();
+                        i8::from_be_bytes(bytes)
+                    };
+
+                    let data_signed = {
+                        let bytes = data.to_be_bytes();
+                        i8::from_be_bytes(bytes)
+                    };
+
+                    dbg!(ac_signed, data_signed);
+
+                    let (res_1, overflow_1) = ac_signed.overflowing_add(data_signed);
+                    let (_res_2, overflow_2) =
+                        res_1.overflowing_add(if self.c_flag() { 1 } else { 0 });
+                    let (result, carry) = dbg!(ac.carrying_add(data, self.c_flag()));
                     self.write_c_flag(carry);
-                    let overflow = util::test_overflow(self.ac, operand);
-                    self.write_v_flag(overflow);
+                    self.write_v_flag(overflow_1 || overflow_2);
                     result
                 };
 
@@ -695,6 +714,78 @@ where
             Inst::PHP => {
                 self.stack_push(self.p);
             }
+            Inst::PLA => {
+                let ac = self.stack_pop();
+                self.ac = ac;
+                self.update_z_flag_with(ac);
+                self.update_n_flag_with(ac);
+            }
+            Inst::PLP => {
+                let p = self.stack_pop();
+                self.p = p;
+            }
+            Inst::ROL => {
+                let (is_memory, operand, address) = {
+                    match address_mode {
+                        AddressMode::ACC => {
+                            // Read accumulator
+                            (false, self.ac, 0x00)
+                        }
+                        _ => {
+                            let effective_addr = self.get_effective_address(&address_mode);
+                            (true, self.mem.read_byte(effective_addr), effective_addr)
+                        }
+                    }
+                };
+
+                let carry_out = 0b1000_0000 & operand != 0;
+                let mut result = operand << 1;
+
+                if self.c_flag() {
+                    result |= 0b0000_0001;
+                }
+
+                if is_memory {
+                    self.mem.write_byte(address, result);
+                } else {
+                    self.ac = result;
+                }
+
+                self.update_n_flag_with(result);
+                self.update_z_flag_with(result);
+                self.write_c_flag(carry_out);
+            }
+            Inst::ROR => {
+                let (is_memory, operand, address) = {
+                    match address_mode {
+                        AddressMode::ACC => {
+                            // Read accumulator
+                            (false, self.ac, 0x00)
+                        }
+                        _ => {
+                            let effective_addr = self.get_effective_address(&address_mode);
+                            (true, self.mem.read_byte(effective_addr), effective_addr)
+                        }
+                    }
+                };
+
+                let carry_out = 0b0000_0001 & operand != 0;
+                let mut result = operand >> 1;
+
+                if self.c_flag() {
+                    result |= 0b1000_0000;
+                }
+
+                if is_memory {
+                    self.mem.write_byte(address, result);
+                } else {
+                    self.ac = result;
+                }
+
+                self.update_n_flag_with(result);
+                self.update_z_flag_with(result);
+                self.write_c_flag(carry_out);
+            }
             Inst::RTI => {
                 let p = self.stack_pop();
                 let pc_ll = self.stack_pop();
@@ -710,6 +801,86 @@ where
                 let pc = u16::from_be_bytes([pc_ll, pc_hh]);
                 self.pc = pc + 1;
                 add_to_pc = false;
+            }
+            Inst::SBC => {
+                let data = {
+                    match address_mode {
+                        AddressMode::IMM => self.mem.read_byte(self.pc + 1),
+                        _ => {
+                            let addr = self.get_effective_address(&address_mode);
+                            self.mem.read_byte(addr)
+                        }
+                    }
+                };
+
+                if self.d_flag() {
+                    // TODO: implement bcd mode
+                    unimplemented!();
+                } else {
+                    let ac_signed = {
+                        let ac_bytes = self.ac.to_be_bytes();
+                        i8::from_be_bytes(ac_bytes)
+                    };
+
+                    let data_signed = {
+                        let data_bytes = data.to_be_bytes();
+                        i8::from_be_bytes(data_bytes)
+                    };
+
+                    let data_signed_neg_u8 = {
+                        let data_signed_neg = -data_signed;
+                        let data_signed_neg_bytes = data_signed_neg.to_be_bytes();
+                        u8::from_be_bytes(data_signed_neg_bytes)
+                    };
+
+                    let (result_1, overflow_1) = ac_signed.overflowing_sub(data_signed);
+
+                    let (_, carry_1) = self.ac.overflowing_add(data_signed_neg_u8);
+
+                    let result_1_u8 = {
+                        let bytes = result_1.to_be_bytes();
+                        u8::from_be_bytes(bytes)
+                    };
+
+                    let (result_2, overflow_2) =
+                        result_1.overflowing_sub(if self.c_flag() { 0 } else { 1 });
+
+                    let (_result_2_u8, carry_2) =
+                        result_1_u8.overflowing_add(if self.c_flag() { 0 } else { 1 });
+
+                    let result_bytes = result_2.to_be_bytes();
+
+                    self.ac = u8::from_be_bytes(result_bytes);
+
+                    self.update_n_flag_with(self.ac);
+                    self.write_v_flag(overflow_1 || overflow_2);
+                    self.update_z_flag_with(self.ac);
+                    self.write_c_flag(carry_1 || carry_2);
+                }
+            }
+            Inst::SEC => {
+                self.write_c_flag(true);
+            }
+            Inst::SED => {
+                self.write_d_flag(true);
+            }
+            Inst::SEI => {
+                self.write_i_flag(true);
+            }
+            Inst::STA => {
+                let address = self.get_effective_address(&address_mode);
+                let ac = self.ac;
+                self.write_to_mem(address, ac);
+            }
+            Inst::STX => {
+                let address = self.get_effective_address(&address_mode);
+                let x = self.x;
+                self.write_to_mem(address, x);
+            }
+            Inst::STY => {
+                let address = self.get_effective_address(&address_mode);
+                let y = self.y;
+                self.write_to_mem(address, y);
             }
 
             _ => unimplemented!(),
