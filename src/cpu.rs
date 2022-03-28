@@ -862,6 +862,9 @@ where
             Inst::SEC => {
                 self.write_c_flag(true);
             }
+            Inst::SED => {
+                self.write_d_flag(true);
+            }
 
             _ => unimplemented!(),
         }
