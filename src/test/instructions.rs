@@ -540,3 +540,11 @@ fn test_sed() {
     cpu.step_inst(Inst::SED, AddressMode::IMPL).unwrap();
     assert!(cpu.d_flag());
 }
+
+#[test]
+fn test_sei() {
+    let mut cpu = util::new_cpu_empty_mem();
+    assert!(!cpu.i_flag());
+    cpu.step_inst(Inst::SEI, AddressMode::IMPL).unwrap();
+    assert!(cpu.i_flag());
+}

@@ -865,6 +865,9 @@ where
             Inst::SED => {
                 self.write_d_flag(true);
             }
+            Inst::SEI => {
+                self.write_i_flag(true);
+            }
 
             _ => unimplemented!(),
         }
