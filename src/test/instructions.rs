@@ -524,3 +524,19 @@ pub fn test_sbc() {
     assert!(cpu.c_flag());
     assert_eq!(cpu.ac(), 0x7F);
 }
+
+#[test]
+fn test_sec() {
+    let mut cpu = util::new_cpu_empty_mem();
+    assert!(!cpu.c_flag());
+    cpu.step_inst(Inst::SEC, AddressMode::IMPL).unwrap();
+    assert!(cpu.c_flag());
+}
+
+#[test]
+fn test_sed() {
+    let mut cpu = util::new_cpu_empty_mem();
+    assert!(!cpu.d_flag());
+    cpu.step_inst(Inst::SED, AddressMode::IMPL).unwrap();
+    assert!(cpu.d_flag());
+}
