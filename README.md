@@ -66,10 +66,10 @@ Status Register (Flags)
 - [x] SBC
 - [x] SEC
 - [x] SED
-- [ ] SEI
-- [ ] STA
-- [ ] STX
-- [ ] STY
+- [x] SEI
+- [x] STA
+- [x] STX
+- [x] STY
 - [ ] TAX
 - [ ] TAY
 - [ ] TSX
