@@ -10,7 +10,7 @@ pub fn init_opc_array() -> [Option<OpMode>; 0xFF] {
     let mut address_mode_already_set = HashMap::new();
 
     // returns a bitmask according to addressing mode
-    fn addr_mode_bitmask(addr_mode: &AddressMode) -> u16 {
+    const fn addr_mode_bitmask(addr_mode: &AddressMode) -> u16 {
         match addr_mode {
             AddressMode::ACC => 1 << 0,
             AddressMode::ABS => 1 << 1,
