@@ -868,6 +868,11 @@ where
             Inst::SEI => {
                 self.write_i_flag(true);
             }
+            Inst::STA => {
+                let address = self.get_effective_address(&address_mode);
+                let ac = self.ac;
+                self.write_to_mem(address, ac);
+            }
 
             _ => unimplemented!(),
         }

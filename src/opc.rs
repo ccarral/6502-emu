@@ -215,6 +215,14 @@ pub fn init_opc_array() -> [Option<OpMode>; 0xFF] {
 
     add_to_opc_arr(0x78, Inst::SEI, AddressMode::IMPL, 2);
 
+    add_to_opc_arr(0x85, Inst::STA, AddressMode::ZPG, 3);
+    add_to_opc_arr(0x95, Inst::STA, AddressMode::ZPGX, 4);
+    add_to_opc_arr(0x8D, Inst::STA, AddressMode::ABS, 4);
+    add_to_opc_arr(0x9D, Inst::STA, AddressMode::ABSX, 5);
+    add_to_opc_arr(0x99, Inst::STA, AddressMode::ABSY, 5);
+    add_to_opc_arr(0x81, Inst::STA, AddressMode::INDX, 6);
+    add_to_opc_arr(0x91, Inst::STA, AddressMode::INDY, 6);
+
     opc_arr
 }
 
@@ -267,7 +275,7 @@ pub enum Inst {
     SEC,
     SED,
     SEI,
-    Sta,
+    STA,
     Stx,
     Sty,
     Tax,

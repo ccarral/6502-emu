@@ -548,3 +548,12 @@ fn test_sei() {
     cpu.step_inst(Inst::SEI, AddressMode::IMPL).unwrap();
     assert!(cpu.i_flag());
 }
+
+#[test]
+fn test_sta() {
+    let mut cpu = util::new_cpu_empty_mem();
+    cpu.write_to_mem(0x0001, 0xF8);
+    cpu.set_ac(0xF1);
+    cpu.step_inst(Inst::STA, AddressMode::ZPG).unwrap();
+    assert_eq!(cpu.read_byte_from_mem(0x00F8), 0xF1);
+}
