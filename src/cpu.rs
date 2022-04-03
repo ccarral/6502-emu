@@ -898,6 +898,11 @@ where
                 self.update_z_flag_with(self.x);
                 self.update_n_flag_with(self.x);
             }
+            Inst::TXA => {
+                self.ac = self.x;
+                self.update_n_flag_with(self.ac);
+                self.update_z_flag_with(self.ac);
+            }
 
             _ => unimplemented!(),
         }

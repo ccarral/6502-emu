@@ -604,3 +604,11 @@ fn test_tsx() {
     assert_eq!(cpu.x(), 0xFE);
     assert!(cpu.n_flag());
 }
+
+#[test]
+fn test_txa() {
+    let mut cpu = util::new_cpu_empty_mem();
+    cpu.set_x(0xDD);
+    cpu.step_inst(Inst::TXA, AddressMode::IMPL).unwrap();
+    assert_eq!(cpu.x(), cpu.ac());
+}
