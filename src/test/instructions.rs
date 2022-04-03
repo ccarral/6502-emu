@@ -577,3 +577,12 @@ fn test_sty() {
     cpu.step_inst(Inst::STY, AddressMode::ABS).unwrap();
     assert_eq!(cpu.read_byte_from_mem(0x04E8), 0xF1);
 }
+
+#[test]
+fn test_tax() {
+    let mut cpu = util::new_cpu_empty_mem();
+    cpu.set_ac(0xF9);
+    cpu.step_inst(Inst::TAX, AddressMode::IMPL).unwrap();
+    assert_eq!(cpu.x(), 0xF9);
+    assert!(cpu.n_flag());
+}

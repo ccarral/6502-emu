@@ -882,6 +882,11 @@ where
                 let y = self.y;
                 self.write_to_mem(address, y);
             }
+            Inst::TAX => {
+                self.x = self.ac;
+                self.update_n_flag_with(self.ac);
+                self.update_z_flag_with(self.ac);
+            }
 
             _ => unimplemented!(),
         }
