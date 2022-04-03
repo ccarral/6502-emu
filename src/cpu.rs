@@ -892,6 +892,12 @@ where
                 self.update_n_flag_with(self.ac);
                 self.update_z_flag_with(self.ac);
             }
+            Inst::TSX => {
+                let [_sp_hh, sp_ll] = self.sp.to_be_bytes();
+                self.x = sp_ll;
+                self.update_z_flag_with(self.x);
+                self.update_n_flag_with(self.x);
+            }
 
             _ => unimplemented!(),
         }

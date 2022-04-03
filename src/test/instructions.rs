@@ -595,3 +595,12 @@ fn test_tay() {
     assert_eq!(cpu.y(), 0xF9);
     assert!(cpu.n_flag());
 }
+
+#[test]
+fn test_tsx() {
+    let mut cpu = util::new_cpu_empty_mem();
+    cpu.stack_push(0x90);
+    cpu.step_inst(Inst::TSX, AddressMode::IMPL).unwrap();
+    assert_eq!(cpu.x(), 0xFE);
+    assert!(cpu.n_flag());
+}
