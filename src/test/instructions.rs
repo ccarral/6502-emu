@@ -586,3 +586,12 @@ fn test_tax() {
     assert_eq!(cpu.x(), 0xF9);
     assert!(cpu.n_flag());
 }
+
+#[test]
+fn test_tay() {
+    let mut cpu = util::new_cpu_empty_mem();
+    cpu.set_ac(0xF9);
+    cpu.step_inst(Inst::TAY, AddressMode::IMPL).unwrap();
+    assert_eq!(cpu.y(), 0xF9);
+    assert!(cpu.n_flag());
+}

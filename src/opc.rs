@@ -233,6 +233,8 @@ pub fn init_opc_array() -> [Option<OpMode>; 0xFF] {
 
     add_to_opc_arr(0xAA, Inst::TAX, AddressMode::IMPL, 2);
 
+    add_to_opc_arr(0xA8, Inst::TAY, AddressMode::IMPL, 2);
+
     opc_arr
 }
 
@@ -289,7 +291,7 @@ pub enum Inst {
     STX,
     STY,
     TAX,
-    Tay,
+    TAY,
     Tsx,
     Txa,
     Txs,

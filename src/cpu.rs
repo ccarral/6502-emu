@@ -214,7 +214,7 @@ where
     }
 
     pub(crate) fn y(&self) -> u8 {
-        self.x
+        self.y
     }
 
     pub(crate) fn pc(&self) -> u16 {
@@ -884,6 +884,11 @@ where
             }
             Inst::TAX => {
                 self.x = self.ac;
+                self.update_n_flag_with(self.ac);
+                self.update_z_flag_with(self.ac);
+            }
+            Inst::TAY => {
+                self.y = self.ac;
                 self.update_n_flag_with(self.ac);
                 self.update_z_flag_with(self.ac);
             }
