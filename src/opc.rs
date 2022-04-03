@@ -241,6 +241,8 @@ pub fn init_opc_array() -> [Option<OpMode>; 0xFF] {
 
     add_to_opc_arr(0x9A, Inst::TXS, AddressMode::IMPL, 2);
 
+    add_to_opc_arr(0x98, Inst::TYA, AddressMode::IMPL, 2);
+
     opc_arr
 }
 
@@ -301,7 +303,7 @@ pub enum Inst {
     TSX,
     TXA,
     TXS,
-    Tya,
+    TYA,
 }
 
 #[derive(Copy, Clone, Debug)]

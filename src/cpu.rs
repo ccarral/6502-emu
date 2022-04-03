@@ -910,8 +910,11 @@ where
             Inst::TXS => {
                 self.sp &= self.x as u16;
             }
-
-            _ => unimplemented!(),
+            Inst::TYA => {
+                self.ac = self.y;
+                self.update_n_flag_with(self.ac);
+                self.update_z_flag_with(self.ac);
+            }
         }
 
         if add_to_pc {

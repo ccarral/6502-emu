@@ -616,8 +616,17 @@ fn test_txa() {
 #[test]
 fn test_txs() {
     let mut cpu = util::new_cpu_empty_mem();
-    cpu.set_x(0xDF);
+    cpu.set_x(0x02);
     cpu.step_inst(Inst::TXS, AddressMode::IMPL).unwrap();
     let [_sp_hh, sp_ll] = cpu.sp().to_be_bytes();
-    assert_eq!(sp_ll, 0xDF);
+    assert_eq!(sp_ll, 0x02);
+}
+
+#[test]
+fn test_tya() {
+    let mut cpu = util::new_cpu_empty_mem();
+    cpu.set_y(0xF0);
+    cpu.step_inst(Inst::TYA, AddressMode::IMPL).unwrap();
+    assert_eq!(cpu.y(), cpu.ac());
+    assert!(cpu.n_flag());
 }
