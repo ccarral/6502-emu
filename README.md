@@ -78,5 +78,5 @@ Status Register (Flags)
 - [x] TAY
 - [x] TSX
 - [x] TXA
-- [ ] TXS
+- [x] TXS
 - [ ] TYA

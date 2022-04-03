@@ -612,3 +612,12 @@ fn test_txa() {
     cpu.step_inst(Inst::TXA, AddressMode::IMPL).unwrap();
     assert_eq!(cpu.x(), cpu.ac());
 }
+
+#[test]
+fn test_txs() {
+    let mut cpu = util::new_cpu_empty_mem();
+    cpu.set_x(0xDF);
+    cpu.step_inst(Inst::TXS, AddressMode::IMPL).unwrap();
+    let [_sp_hh, sp_ll] = cpu.sp().to_be_bytes();
+    assert_eq!(sp_ll, 0xDF);
+}

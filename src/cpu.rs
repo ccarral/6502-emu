@@ -209,6 +209,10 @@ where
         self.p
     }
 
+    pub(crate) fn sp(&self) -> u16 {
+        self.sp
+    }
+
     pub(crate) fn x(&self) -> u8 {
         self.x
     }
@@ -902,6 +906,9 @@ where
                 self.ac = self.x;
                 self.update_n_flag_with(self.ac);
                 self.update_z_flag_with(self.ac);
+            }
+            Inst::TXS => {
+                self.sp &= self.x as u16;
             }
 
             _ => unimplemented!(),
