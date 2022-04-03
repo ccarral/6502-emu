@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="./resources/mini6502_logo.png" width="60%"/>
+</p>
+
 # mini6502
 A lightweight and simple 6502 emulation library and CLI.
 
