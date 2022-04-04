@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
-#[derive(Copy, Clone)]
-// (Instruction, AddressMode, cycles)
+#[derive(Copy, Clone, Debug)]
 pub struct OpMode(pub Inst, pub AddressMode, pub u8);
 
 pub fn init_opc_array() -> [Option<OpMode>; 0xFF] {
@@ -160,6 +159,18 @@ pub fn init_opc_array() -> [Option<OpMode>; 0xFF] {
     add_to_opc_arr(0xB9, Inst::LDA, AddressMode::ABSY, 6);
     add_to_opc_arr(0xA1, Inst::LDA, AddressMode::INDX, 6);
     add_to_opc_arr(0xB1, Inst::LDA, AddressMode::INDY, 6);
+
+    add_to_opc_arr(0xA2, Inst::LDX, AddressMode::IMM, 7);
+    add_to_opc_arr(0xA6, Inst::LDX, AddressMode::ZPG, 7);
+    add_to_opc_arr(0xB6, Inst::LDX, AddressMode::ZPGY, 7);
+    add_to_opc_arr(0xAE, Inst::LDX, AddressMode::ABS, 7);
+    add_to_opc_arr(0xBE, Inst::LDX, AddressMode::ABSY, 7);
+
+    add_to_opc_arr(0xA0, Inst::LDY, AddressMode::IMM, 7);
+    add_to_opc_arr(0xA4, Inst::LDY, AddressMode::ZPG, 7);
+    add_to_opc_arr(0xB4, Inst::LDY, AddressMode::ZPGX, 7);
+    add_to_opc_arr(0xAC, Inst::LDY, AddressMode::ABS, 7);
+    add_to_opc_arr(0xBC, Inst::LDY, AddressMode::ABSX, 7);
 
     add_to_opc_arr(0x4A, Inst::LSR, AddressMode::ACC, 2);
     add_to_opc_arr(0x46, Inst::LSR, AddressMode::ZPG, 5);
