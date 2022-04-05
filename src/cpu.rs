@@ -58,7 +58,9 @@ where
     }
 
     /// Run program loaded in cpu, with `callback_exit` called before each instruction is executed.
-    /// If the return value is true, then execution will end.
+    /// The cpu will execute the fetch - decode - execute cycle until it encounters an instruction
+    /// that can't decode and then will return an `Err`.
+    /// Alternatively, it can stop execution before that by returning `true` from `callback_exit`.
     ///```rust
     /// use mini6502::{Cpu, SimpleMemory};
     ///
