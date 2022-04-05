@@ -246,6 +246,11 @@ pub fn test_cpx() {
     assert!(!cpu.z_flag());
     assert!(!cpu.n_flag());
     assert!(cpu.c_flag());
+
+    cpu.write_to_mem(0x05, 0x10);
+    cpu.set_x(0x10);
+    cpu.step_inst(Inst::CPX, AddressMode::IMM).unwrap();
+    assert!(cpu.z_flag());
 }
 #[test]
 pub fn test_cpy() {
