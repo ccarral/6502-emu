@@ -13,7 +13,6 @@ const Z_FLAG_BITMASK: u8 = 0b00000010;
 const C_FLAG_BITMASK: u8 = 0b00000001;
 const FLAGS_DEFAULT: u8 = 0b00100000;
 const STACK_ADDR_DEFAULT: u16 = 0x01FF;
-const MAX_INST_CYCLES: u8 = 6;
 
 pub struct Cpu<M> {
     // Program counter
@@ -58,25 +57,36 @@ where
         }
     }
 
-    /// Run program loaded in cpu. A closure can be optionally passed
-    /// if we want to do something (displaying registers, etc.) with the `Cpu`
-    /// on each cycle.
+    /// Run program loaded in cpu, with `callback_exit` called before each instruction is executed.
+    /// If the return value is true, then execution will end.
+    ///```rust
+    /// use mini6502::{Cpu, SimpleMemory};
     ///
-    /// # Arguments
-    /// * `step_callback` - Closure that takes an immutable reference to the `Cpu` and is called
-    /// before every instruction is executed.
+    /// let buf = [0xa2, 0x01, 0xe8, 0xe0, 0x10, 0xd0, 0xfb];
     ///
-    /// # Errors
-    /// Fails whenever fetching the next (valid) instruction fails.
-    pub fn run(mut self, step_callback: &mut dyn FnMut(&Cpu<M>)) -> Result<(), Error6502> {
+    /// let mem = SimpleMemory::from_rom(&buf);
+    ///
+    /// let mut cpu = Cpu::with_mem(mem);
+    ///
+    /// cpu.run(&mut |cpu: &Cpu<SimpleMemory>|{
+    ///     println!("ir: {:?} x:{} y:{} status reg:{}",cpu.ir() , cpu.x(), cpu.y(), cpu.p());
+    ///     cpu.pc() as usize >= buf.len()
+    /// });
+    ///
+    /// assert_eq!(cpu.x(), 0x10);
+    ///```
+    pub fn run(&mut self, callback_exit: &mut dyn FnMut(&Cpu<M>) -> bool) -> Result<(), Error6502> {
         let opc_arr = opc::init_opc_array();
         loop {
             // Loop until we encounter an unknown opcode
             if let Ok(OpMode(instruction, address_mode, _cycles)) = self.fetch_next_inst(&opc_arr) {
-                step_callback(&self);
+                if callback_exit(&self) {
+                    break;
+                }
                 self.set_ir(instruction);
                 self.step_inst(instruction, address_mode)?;
             } else {
+                println!("error!");
                 break;
             }
         }
@@ -123,7 +133,6 @@ where
     /// Checks if the sum of the two values overflows, updates the carry flag accordingly and
     /// returns the (wrapped) sum of the values
     pub(crate) fn write_c_flag(&mut self, carry: bool) {
-        // TODO: Possibly only take one argument and test with acc register?
         if carry {
             self.p |= C_FLAG_BITMASK;
         } else {
@@ -201,27 +210,27 @@ where
         self.pc += val;
     }
 
-    pub(crate) fn ac(&self) -> u8 {
+    pub fn ac(&self) -> u8 {
         self.ac
     }
 
-    pub(crate) fn p(&self) -> u8 {
+    pub fn p(&self) -> u8 {
         self.p
     }
 
-    pub(crate) fn sp(&self) -> u16 {
+    pub fn sp(&self) -> u16 {
         self.sp
     }
 
-    pub(crate) fn x(&self) -> u8 {
+    pub fn x(&self) -> u8 {
         self.x
     }
 
-    pub(crate) fn y(&self) -> u8 {
+    pub fn y(&self) -> u8 {
         self.y
     }
 
-    pub(crate) fn pc(&self) -> u16 {
+    pub fn pc(&self) -> u16 {
         self.pc
     }
 
@@ -272,6 +281,10 @@ where
 
     fn set_ir(&mut self, inst: Inst) {
         self.ir = Some(inst);
+    }
+
+    pub fn ir(&self) -> Option<Inst> {
+        self.ir
     }
 
     pub fn step_inst(&mut self, inst: Inst, address_mode: AddressMode) -> Result<(), Error6502> {
@@ -921,6 +934,7 @@ where
             let instr_len = get_instr_len(&address_mode);
             self.pc += instr_len;
         }
+
         Ok(())
     }
 
@@ -938,6 +952,10 @@ where
 
     pub(crate) fn read_immediate_byte(&self) -> u8 {
         self.mem.read_byte(self.pc + 1)
+    }
+
+    pub(crate) fn add_to_cycle_count(&mut self, cycles: u8) {
+        self.cycle_count += cycles;
     }
 
     /// Get relative address for jump instruction, min -126 and max 129

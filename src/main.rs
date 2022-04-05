@@ -21,13 +21,14 @@ pub fn main() -> Result<(), Box<dyn Error>> {
     match fs::read(file_name) {
         Ok(contents) => {
             let mem = SimpleMemory::from_rom(&contents);
-            let cpu = Cpu::with_mem(mem);
+            let mut cpu = Cpu::with_mem(mem);
             let stdin = std::io::stdin();
             let mut buf = String::new();
 
             let mut callable = |cpu: &Cpu<SimpleMemory>| {
                 print!("\r{cpu}\n");
                 stdin.read_line(&mut buf).unwrap();
+                false
             };
             cpu.run(&mut callable)?;
         }

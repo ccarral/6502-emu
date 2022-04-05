@@ -10,7 +10,7 @@ pub struct SimpleMemory {
 impl SimpleMemory {
     fn new() -> Self {
         SimpleMemory {
-            inner: [0; 0x10000],
+            inner: [0x00; 0x10000],
         }
     }
 
