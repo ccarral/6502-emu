@@ -25,9 +25,9 @@ pub struct Cpu<M> {
     p: u8,
     // Stack pointer.
     sp: u16,
-    mem: M,
+    pub mem: M,
     ir: Option<Inst>,
-    cycle_count: u8,
+    cycle_count: usize,
 }
 
 impl<M> Cpu<M>
@@ -61,10 +61,10 @@ where
     /// The cpu will execute the fetch - decode - execute cycle until it encounters an instruction
     /// that can't decode and then will return an `Err`.
     /// Alternatively, it can stop execution before that by returning `true` from `callback_exit`.
-    ///```rust
+    ///```no_run
     /// use mini6502::{Cpu, SimpleMemory};
     ///
-    /// let buf = [0xa2, 0x01, 0xe8, 0xe0, 0x10, 0xd0, 0xfb];
+    /// let buf = [0xa2, 0x10, 0xCA, 0xD0, 0xFD];
     ///
     /// let mem = SimpleMemory::from_rom(&buf);
     ///
@@ -81,15 +81,15 @@ where
         let opc_arr = opc::init_opc_array();
         loop {
             // Loop until we encounter an unknown opcode
-            if let Ok(OpMode(instruction, address_mode, _cycles)) = self.fetch_next_inst(&opc_arr) {
+            if let Ok(OpMode(instruction, address_mode, cycles)) = self.fetch_next_inst(&opc_arr) {
+                self.set_ir(instruction);
                 if callback_exit(&self) {
                     break;
                 }
-                self.set_ir(instruction);
                 self.step_inst(instruction, address_mode)?;
+                self.add_to_cycle_count(cycles)
             } else {
-                println!("error!");
-                break;
+                return Err(Error6502::UnknownOpcode(self.read_byte_from_mem(self.pc)));
             }
         }
         Ok(())
@@ -191,6 +191,7 @@ where
     }
 
     /// Convert u16 pc to usize so it can be used to address memory
+    #[inline]
     pub fn pc_usize(&self) -> usize {
         // Mask pc to u16::MAX
         self.pc as usize & 0xFFFF
@@ -212,26 +213,32 @@ where
         self.pc += val;
     }
 
+    #[inline]
     pub fn ac(&self) -> u8 {
         self.ac
     }
 
+    #[inline]
     pub fn p(&self) -> u8 {
         self.p
     }
 
+    #[inline]
     pub fn sp(&self) -> u16 {
         self.sp
     }
 
+    #[inline]
     pub fn x(&self) -> u8 {
         self.x
     }
 
+    #[inline]
     pub fn y(&self) -> u8 {
         self.y
     }
 
+    #[inline]
     pub fn pc(&self) -> u16 {
         self.pc
     }
@@ -271,13 +278,14 @@ where
         opc_arr: &[Option<OpMode>; 0xFF],
     ) -> Result<OpMode, Error6502> {
         // NOTE: we could define opc_arr as a global const, but then we miss initialization checks
-        // of opcode repetition, as we can't make init_opc_array() const.
+        // of opcode repetition, as we currently can't make init_opc_array() const.
 
         // Read byte at pc
-        let byte = self.mem.read_byte(self.pc);
+        dbg!(self.pc);
+        let byte = dbg!(self.mem.read_byte(self.pc));
         match opc_arr[byte as usize] {
             Some(op_mode) => Ok(op_mode),
-            None => Err(Error6502::InvalidInstruction),
+            None => Err(Error6502::UnknownOpcode(byte)),
         }
     }
 
@@ -325,12 +333,12 @@ where
                         i8::from_be_bytes(bytes)
                     };
 
-                    dbg!(ac_signed, data_signed);
+                    // dbg!(ac_signed, data_signed);
 
                     let (res_1, overflow_1) = ac_signed.overflowing_add(data_signed);
                     let (_res_2, overflow_2) =
                         res_1.overflowing_add(if self.c_flag() { 1 } else { 0 });
-                    let (result, carry) = dbg!(ac.carrying_add(data, self.c_flag()));
+                    let (result, carry) = ac.carrying_add(data, self.c_flag());
                     self.write_c_flag(carry);
                     self.write_v_flag(overflow_1 || overflow_2);
                     result
@@ -389,7 +397,7 @@ where
             Inst::BCC => {
                 // Relative addressing
                 if !self.c_flag() {
-                    let target_addr = self.get_relative_address();
+                    let target_addr = self.get_relative_address(self.pc + 1);
                     self.pc = target_addr;
                     add_to_pc = false;
                 }
@@ -397,7 +405,7 @@ where
             Inst::BCS => {
                 // Relative addressing
                 if self.c_flag() {
-                    let target_addr = self.get_relative_address();
+                    let target_addr = self.get_relative_address(self.pc + 1);
                     self.pc = target_addr;
                     add_to_pc = false;
                 }
@@ -405,7 +413,7 @@ where
             Inst::BEQ => {
                 // Relative addressing
                 if self.z_flag() {
-                    let target_addr = self.get_relative_address();
+                    let target_addr = self.get_relative_address(self.pc + 1);
                     self.pc = target_addr;
                     add_to_pc = false;
                 }
@@ -427,21 +435,21 @@ where
             Inst::BMI => {
                 // Relative addressing
                 if self.n_flag() {
-                    let target_addr = self.get_relative_address();
+                    let target_addr = self.get_relative_address(self.pc + 1);
                     self.pc = target_addr;
                     add_to_pc = false;
                 }
             }
             Inst::BNE => {
                 if !self.z_flag() {
-                    let target_addr = self.get_relative_address();
+                    let target_addr = self.get_relative_address(self.pc + 1);
                     self.pc = target_addr;
                     add_to_pc = false;
                 }
             }
             Inst::BPL => {
                 if !self.n_flag() {
-                    let target_addr = self.get_relative_address();
+                    let target_addr = self.get_relative_address(self.pc + 1);
                     self.pc = target_addr;
                     add_to_pc = false;
                 }
@@ -462,14 +470,14 @@ where
             }
             Inst::BVC => {
                 if !self.v_flag() {
-                    let target_addr = self.get_relative_address();
+                    let target_addr = self.get_relative_address(self.pc + 1);
                     self.pc = target_addr;
                     add_to_pc = false;
                 }
             }
             Inst::BVS => {
                 if self.v_flag() {
-                    let target_addr = self.get_relative_address();
+                    let target_addr = self.get_relative_address(self.pc + 1);
                     self.pc = target_addr;
                     add_to_pc = false;
                 }
@@ -608,6 +616,7 @@ where
 
                 let acc = self.ac;
                 let result = acc ^ operand;
+                self.ac = result;
                 self.update_z_flag_with(result);
                 self.update_n_flag_with(result);
             }
@@ -947,7 +956,6 @@ where
     pub(crate) fn write_to_mem(&mut self, addr: u16, byte: u8) {
         self.mem.write_byte(addr, byte);
     }
-
     pub(crate) fn read_byte_from_mem(&self, addr: u16) -> u8 {
         self.mem.read_byte(addr)
     }
@@ -957,14 +965,12 @@ where
     }
 
     pub(crate) fn add_to_cycle_count(&mut self, cycles: u8) {
-        self.cycle_count += cycles;
+        self.cycle_count += cycles as usize;
     }
 
-    /// Get relative address for jump instruction, min -126 and max 129
-    pub(crate) fn get_relative_address(&self) -> u16 {
-        // Get 8 bit 2's complement encoded signed offset
-        let bb_addr = u16::wrapping_add(self.pc, 1);
-        let offset = self.mem.read_byte(bb_addr);
+    /// Get relative address for jump instruction, min -128 and max 127
+    pub(crate) fn get_relative_address(&self, offset_address: u16) -> u16 {
+        let offset = self.mem.read_byte(offset_address);
         let offset_16 = {
             if util::test_negative(offset) {
                 // Number is negative, extend with 0xFF
@@ -973,8 +979,11 @@ where
                 util::combine_u8_to_u16(0x00, offset)
             }
         };
-        let target_addr = u16::wrapping_add(offset_16, self.pc);
-        target_addr + 2
+        // Explanation:
+        // The jump is calculated from the offset address + 1, because in the real 6502, you
+        // consume one byte at a time and increment the program counter accordingly. However, this
+        // emulator doesn't increment the pc until after the whole instruction is executed.
+        offset_16.wrapping_add(offset_address).wrapping_add(1)
     }
 
     pub(crate) fn get_effective_address(&self, address_mode: &AddressMode) -> u16 {
@@ -1073,33 +1082,6 @@ where
                 effective_addr
             }
         }
-    }
-}
-impl<M> std::fmt::Display for Cpu<M>
-where
-    M: Memory,
-{
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        fn format_flag(flag: bool) -> u8 {
-            match flag {
-                true => 1,
-                false => 0,
-            }
-        }
-        f.write_fmt(format_args!(
-            "
-    Registers:
-    PC {:#04x}
-    AC {:#04x}
-
-    Flags:
-    NV-BDIZC
-    {:08b}
-    ",
-            self.pc_usize(),
-            self.ac,
-            self.p
-        ))
     }
 }
 
