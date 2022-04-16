@@ -69,18 +69,28 @@ fn test_indirect_y_indexed_addressing() {
 fn test_relative_addressing() {
     let mut cpu = util::new_cpu_empty_mem();
     cpu.set_pc(0x0500);
-    // Offset de 30 (dec)
-    cpu.write_to_mem(0x0501, 0b00011110);
-    let target_addr = cpu.get_relative_address();
-    // 0x0502 + 0x1E (30) = 0x0520
-    assert_eq!(target_addr, 0x0520);
+    // Offset de -128 (dec)
+    cpu.write_to_mem(0x0501, 0x80);
+    let target_addr = cpu.get_relative_address(cpu.pc() + 1);
+    assert_eq!(target_addr, 0x0482);
 
     cpu.set_pc(0x0600);
-    // Offset de -30 (dec)
-    cpu.write_to_mem(0x0601, 0b11100010);
-    let target_addr = cpu.get_relative_address();
-    // 0x0602 + 0xE2 (-30) = 0x05E4
-    assert_eq!(target_addr, 0x05E4);
+    // Offset de -1 (dec)
+    cpu.write_to_mem(0x0601, 0xFF);
+    let target_addr = cpu.get_relative_address(cpu.pc() + 1);
+    assert_eq!(target_addr, 0x0601);
+
+    cpu.set_pc(0x0400);
+    // Offset de 127
+    cpu.write_to_mem(0x0401, 0x7F);
+    let target_addr = cpu.get_relative_address(cpu.pc() + 1);
+    assert_eq!(target_addr, 0x481);
+
+    cpu.set_pc(0x0900);
+    // Offset de 0
+    cpu.write_to_mem(0x0901, 0x00);
+    let target_addr = cpu.get_relative_address(cpu.pc() + 1);
+    assert_eq!(target_addr, 0x902);
 }
 
 #[test]

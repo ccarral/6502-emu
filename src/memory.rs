@@ -4,7 +4,7 @@ pub trait Memory {
 }
 
 pub struct SimpleMemory {
-    inner: [u8; 0x10000],
+    pub inner: [u8; 0x10000],
 }
 
 impl SimpleMemory {

@@ -1,5 +1,5 @@
 use crate::opc::{AddressMode, Inst};
-use crate::util;
+use crate::{util, Cpu, SimpleMemory};
 
 #[test]
 pub fn test_adc() {
@@ -99,15 +99,15 @@ pub fn test_branch_instructions() {
     assert_eq!(cpu.pc(), 0x03E6);
 
     // BMI
-    cpu.update_n_flag_with(0b11000000);
+    cpu.update_n_flag_with(0x01);
     cpu.set_pc(0x0500);
-    cpu.step_inst(Inst::BEQ, AddressMode::REL).unwrap();
+    cpu.step_inst(Inst::BMI, AddressMode::REL).unwrap();
     // No jump
     assert_eq!(cpu.pc(), 0x0502);
-    cpu.update_n_flag_with(2);
+    cpu.update_n_flag_with(0xFF);
     // -30
     cpu.write_to_mem(0x0503, 0xE2);
-    cpu.step_inst(Inst::BEQ, AddressMode::REL).unwrap();
+    cpu.step_inst(Inst::BMI, AddressMode::REL).unwrap();
     assert_eq!(cpu.pc(), 0x04E6);
 
     // BNE
@@ -317,11 +317,14 @@ pub fn test_eor() {
     cpu.step_inst(Inst::EOR, AddressMode::IMM).unwrap();
     assert!(cpu.z_flag());
     assert!(!cpu.n_flag());
+    assert_eq!(cpu.ac(), 0);
+
     cpu.set_ac(0b00000001);
     cpu.write_to_mem(0x0003, 0b10000000);
     cpu.step_inst(Inst::EOR, AddressMode::IMM).unwrap();
     assert!(!cpu.z_flag());
     assert!(cpu.n_flag());
+    assert_eq!(cpu.ac(), 0b10000001);
 }
 
 #[test]
@@ -634,4 +637,18 @@ fn test_tya() {
     cpu.step_inst(Inst::TYA, AddressMode::IMPL).unwrap();
     assert_eq!(cpu.y(), cpu.ac());
     assert!(cpu.n_flag());
+}
+
+#[test]
+fn functional_test() {
+    let bin = std::fs::read("src/test/6502_functional_test.bin").unwrap();
+    let simple_mem = SimpleMemory::from_rom(&bin);
+    let mut cpu = Cpu::with_mem(simple_mem);
+    cpu.set_pc(0x0400);
+    cpu.run(&mut |cpu: &Cpu<SimpleMemory>| {
+        println!("{cpu}");
+        println!("{:#02x?}", &cpu.mem.inner[0x04e5..0x04e5 + 3]);
+        false
+    })
+    .unwrap();
 }
