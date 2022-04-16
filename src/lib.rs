@@ -4,6 +4,7 @@ pub mod cpu;
 pub mod error;
 pub use cpu::Cpu;
 pub use memory::SimpleMemory;
+mod format;
 pub mod memory;
 mod opc;
 mod test;
