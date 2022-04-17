@@ -626,8 +626,9 @@ fn test_txs() {
     let mut cpu = util::new_cpu_empty_mem();
     cpu.set_x(0x02);
     cpu.step_inst(Inst::TXS, AddressMode::IMPL).unwrap();
-    let [_sp_hh, sp_ll] = cpu.sp().to_be_bytes();
+    let [sp_hh, sp_ll] = cpu.sp().to_be_bytes();
     assert_eq!(sp_ll, 0x02);
+    assert_eq!(sp_hh, 0x01);
 }
 
 #[test]

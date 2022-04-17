@@ -932,7 +932,7 @@ where
                 self.update_z_flag_with(self.ac);
             }
             Inst::TXS => {
-                self.sp &= self.x as u16;
+                self.sp = u16::from_be_bytes([0x01, self.x]);
             }
             Inst::TYA => {
                 self.ac = self.y;
