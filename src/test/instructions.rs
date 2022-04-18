@@ -470,7 +470,7 @@ pub fn test_php_plp() {
     cpu.step_inst(Inst::PHP, AddressMode::IMPL).unwrap();
     cpu.or_flags(0xFF);
     cpu.step_inst(Inst::PLP, AddressMode::IMPL).unwrap();
-    assert_eq!(cpu.p(), 0b10101000);
+    assert_eq!(cpu.p(), 0b10111000);
 }
 
 #[test]

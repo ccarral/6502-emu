@@ -740,7 +740,7 @@ where
                 self.stack_push(self.ac);
             }
             Inst::PHP => {
-                self.stack_push(self.p);
+                self.stack_push(self.p | B_FLAG_BITMASK | 0b00100000);
             }
             Inst::PLA => {
                 let ac = self.stack_pop();
@@ -750,7 +750,7 @@ where
             }
             Inst::PLP => {
                 let p = self.stack_pop();
-                self.p = p;
+                self.p = p | B_FLAG_BITMASK | 0b00100000;
             }
             Inst::ROL => {
                 let (is_memory, operand, address) = {
