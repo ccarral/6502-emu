@@ -37,10 +37,12 @@ fn test_absolute_y_addressing() {
 fn test_indirect_addressing() {
     let mut cpu = util::new_cpu_empty_mem();
     cpu.set_pc(0x13FE);
+    cpu.write_to_mem(0xCC01, 0xCA);
+    cpu.write_to_mem(0xCC02, 0xAC);
     cpu.write_to_mem(0x13FF, 0x01);
     cpu.write_to_mem(0x1300, 0xCC);
     let effective_addr = cpu.get_effective_address(&AddressMode::IND);
-    assert_eq!(effective_addr, 0xCC01);
+    assert_eq!(effective_addr, 0xACCA);
 }
 
 #[test]

@@ -9,10 +9,11 @@ where
             "
     Instruction: {}
     Registers:
-    PC {:#04x}
+    PC {:#06x}
     AC {:#04x}
-    X: {:#02x}
-    Y: {:#02x}
+    X: {:#04x}
+    Y: {:#04x}
+    SP:{:#06x} -> [{}]
 
     Flags:
     NV-BDIZC
@@ -26,6 +27,14 @@ where
             self.ac(),
             self.x(),
             self.y(),
+            self.sp(),
+            if &self.sp() == &0x01FF {
+                "empty".to_string()
+            } else {
+                let sp = &self.sp();
+                let bb = self.read_byte_from_mem(*sp + 1);
+                format!("{:#04x}", bb)
+            },
             self.p()
         ))
     }

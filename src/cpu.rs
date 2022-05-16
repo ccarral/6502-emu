@@ -281,8 +281,8 @@ where
         // of opcode repetition, as we currently can't make init_opc_array() const.
 
         // Read byte at pc
-        dbg!(self.pc);
-        let byte = dbg!(self.mem.read_byte(self.pc));
+        // dbg!(self.pc);
+        let byte = self.mem.read_byte(self.pc);
         match opc_arr[byte as usize] {
             Some(op_mode) => Ok(op_mode),
             None => Err(Error6502::UnknownOpcode(byte)),
@@ -714,10 +714,7 @@ where
                     self.write_to_mem(address, result);
                 }
             }
-            Inst::NOP => {
-                // TODO: enable asm features
-                // asm!("NOP");
-            }
+            Inst::NOP => {}
             Inst::ORA => {
                 let data = {
                     match address_mode {
@@ -1021,8 +1018,8 @@ where
                 let hh_addr = u16::wrapping_add(self.pc, 2);
                 let ll = self.mem.read_byte(ll_addr);
                 let hh = self.mem.read_byte(hh_addr);
-                let effective_addr = util::combine_u8_to_u16(hh, ll);
-                effective_addr
+
+                util::combine_u8_to_u16(hh, ll)
             }
             AddressMode::ABSX => {
                 let ll_addr = u16::wrapping_add(self.pc, 1);
@@ -1031,8 +1028,7 @@ where
                 let hh = self.mem.read_byte(hh_addr);
                 let base = util::combine_u8_to_u16(hh, ll);
                 let index = util::u8_to_u16(self.x);
-                let effective_addr = u16::wrapping_add(base, index);
-                effective_addr
+                u16::wrapping_add(base, index)
             }
             AddressMode::ABSY => {
                 let ll_addr = u16::wrapping_add(self.pc, 1);
@@ -1041,8 +1037,7 @@ where
                 let hh = self.mem.read_byte(hh_addr);
                 let base = util::combine_u8_to_u16(hh, ll);
                 let index = util::u8_to_u16(self.y);
-                let effective_addr = u16::wrapping_add(base, index);
-                effective_addr
+                u16::wrapping_add(base, index)
             }
             AddressMode::IND => {
                 // NOTE: This mode doesn't cross page boundaries.
@@ -1051,8 +1046,15 @@ where
                 let hh_addr = util::wrapping_add_same_page(self.pc, 2);
                 let ll = self.mem.read_byte(ll_addr);
                 let hh = self.mem.read_byte(hh_addr);
-                let effective_addr = util::combine_u8_to_u16(hh, ll);
-                effective_addr
+
+                let a1 = util::combine_u8_to_u16(hh, ll);
+                let ll = self.read_byte_from_mem(a1);
+                let hh = {
+                    let addr = util::wrapping_add_same_page(a1, 1);
+                    self.read_byte_from_mem(addr)
+                };
+
+                util::combine_u8_to_u16(hh, ll)
             }
             AddressMode::INDX => {
                 let bb_addr = u16::wrapping_add(self.pc, 1);
@@ -1067,8 +1069,7 @@ where
                 let ll = self.mem.read_byte(ind_addr_ll_zpg);
                 let hh = self.mem.read_byte(ind_addr_hh_zpg);
 
-                let effective_addr = util::combine_u8_to_u16(hh, ll);
-                effective_addr
+                util::combine_u8_to_u16(hh, ll)
             }
             AddressMode::INDY => {
                 let ll_addr = u16::wrapping_add(self.pc, 1);
