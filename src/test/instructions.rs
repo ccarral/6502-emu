@@ -645,11 +645,24 @@ fn functional_test() {
     let bin = std::fs::read("src/test/6502_functional_test.bin").unwrap();
     let simple_mem = SimpleMemory::from_rom(&bin);
     let mut cpu = Cpu::with_mem(simple_mem);
+
+    // let mut jmp_count = 0;
     cpu.set_pc(0x0400);
     cpu.run(&mut |cpu: &Cpu<SimpleMemory>| {
         println!("{cpu}");
-        println!("{:#02x?}", &cpu.mem.inner[0x04e5..0x04e5 + 3]);
+        // println!(
+        // "{:#?}",
+        // &cpu.mem.inner[cpu.pc_usize() + 1..cpu.pc_usize() + 3]
+        // );
+        // if cpu.ir() == Some(Inst::JMP) {
+        // jmp_count += 1;
+        // }
+        // jmp_count == 100
+        // cpu.pc() == 0x3783
+        // cpu.sp() != 0x01FF
         false
     })
     .unwrap();
+
+    println!("pc: {:#06x}", cpu.pc());
 }

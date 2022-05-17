@@ -649,7 +649,7 @@ where
             }
             Inst::JSR => {
                 let pc = self.pc + 2;
-                let [pc_ll, pc_hh] = pc.to_be_bytes();
+                let [pc_hh, pc_ll] = pc.to_be_bytes();
                 self.stack_push(pc_hh);
                 self.stack_push(pc_ll);
                 let addr = self.get_effective_address(&address_mode);
@@ -660,11 +660,11 @@ where
                 let data = match address_mode {
                     AddressMode::IMM => self.mem.read_byte(self.pc + 1),
                     _ => {
-                        let addr = self.get_effective_address(&address_mode);
+                        let addr = dbg!(self.get_effective_address(&address_mode));
                         self.mem.read_byte(addr)
                     }
                 };
-                self.set_ac(data);
+                self.set_ac(dbg!(data));
                 self.update_z_flag_with(data);
                 self.update_n_flag_with(data);
             }
@@ -823,7 +823,7 @@ where
             Inst::RTS => {
                 let pc_ll = self.stack_pop();
                 let pc_hh = self.stack_pop();
-                let pc = u16::from_be_bytes([pc_ll, pc_hh]);
+                let pc = u16::from_be_bytes([pc_hh, pc_ll]);
                 self.pc = pc + 1;
                 add_to_pc = false;
             }
@@ -996,29 +996,25 @@ where
             AddressMode::ZPG => {
                 // Zero Page address 0LL
                 let addr = self.mem.read_byte(self.pc + 1);
-                let effective_addr = util::u8_to_u16(addr);
-                effective_addr
+                util::u8_to_u16(addr)
             }
             AddressMode::ZPGX => {
                 // Read zero page address 0LL + X without carry
                 let addr = self.mem.read_byte(self.pc + 1);
                 let effective_addr = u8::wrapping_add(addr, self.x);
-                let effective_addr = util::u8_to_u16(effective_addr);
-                effective_addr
+                util::u8_to_u16(effective_addr)
             }
             AddressMode::ZPGY => {
                 // Read zero page address 0LL + Y without carry
                 let addr = self.mem.read_byte(self.pc + 1);
                 let effective_addr = u8::wrapping_add(addr, self.y);
-                let effective_addr = util::u8_to_u16(effective_addr);
-                effective_addr
+                util::u8_to_u16(effective_addr)
             }
             AddressMode::ABS => {
                 let ll_addr = u16::wrapping_add(self.pc, 1);
                 let hh_addr = u16::wrapping_add(self.pc, 2);
                 let ll = self.mem.read_byte(ll_addr);
                 let hh = self.mem.read_byte(hh_addr);
-
                 util::combine_u8_to_u16(hh, ll)
             }
             AddressMode::ABSX => {
