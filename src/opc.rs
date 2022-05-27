@@ -209,6 +209,8 @@ pub fn init_opc_array() -> [Option<OpMode>; 0xFF] {
     add_to_opc_arr(0x6E, Inst::ROR, AddressMode::ABS, 6);
     add_to_opc_arr(0x7E, Inst::ROR, AddressMode::ABSX, 7);
 
+    add_to_opc_arr(0x40, Inst::RTI, AddressMode::IMPL, 6);
+
     add_to_opc_arr(0x60, Inst::RTS, AddressMode::IMPL, 6);
 
     add_to_opc_arr(0xE9, Inst::SBC, AddressMode::IMM, 2);
