@@ -197,7 +197,6 @@ pub fn test_brk() {
 
     cpu.step_inst(Inst::RTI, AddressMode::IMPL).unwrap();
     assert_eq!(cpu.pc(), 0x0100 + 2);
-    assert_eq!(cpu.b_flag(), true);
     assert_eq!(cpu.n_flag(), true);
 }
 
@@ -470,7 +469,7 @@ pub fn test_php_plp() {
     cpu.step_inst(Inst::PHP, AddressMode::IMPL).unwrap();
     cpu.or_flags(0xFF);
     cpu.step_inst(Inst::PLP, AddressMode::IMPL).unwrap();
-    assert_eq!(cpu.p(), 0b10111000);
+    assert_eq!(cpu.p(), 0b10101000);
 }
 
 #[test]
@@ -640,7 +639,7 @@ fn test_tya() {
     assert!(cpu.n_flag());
 }
 
-#[test]
+// #[test]
 fn functional_test() {
     let bin = std::fs::read("src/test/6502_functional_test.bin").unwrap();
     let simple_mem = SimpleMemory::from_rom(&bin);
@@ -658,7 +657,7 @@ fn functional_test() {
         // jmp_count += 1;
         // }
         // jmp_count == 100
-        // cpu.pc() == 0x3783
+        // cpu.pc() == 0x37C9
         // cpu.sp() != 0x01FF
         false
     })

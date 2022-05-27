@@ -748,7 +748,7 @@ where
             }
             Inst::PLP => {
                 let p = self.stack_pop();
-                self.p = p | B_FLAG_BITMASK | UNUSED_FLAG_BITMASK;
+                self.p = (p | UNUSED_FLAG_BITMASK) & !(B_FLAG_BITMASK);
             }
             Inst::ROL => {
                 let (is_memory, operand, address) = {
@@ -817,7 +817,7 @@ where
                 let pc_ll = self.stack_pop();
                 let pc_hh = self.stack_pop();
                 let pc = u16::from_be_bytes([pc_hh, pc_ll]);
-                self.p = p;
+                self.p = p & !B_FLAG_BITMASK;
                 self.pc = pc;
                 add_to_pc = false;
             }
