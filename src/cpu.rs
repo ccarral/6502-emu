@@ -461,6 +461,7 @@ where
                 self.stack_push(pc_hh);
                 self.stack_push(pc_ll);
                 self.write_b_flag(true);
+                self.write_i_flag(true);
                 self.stack_push(self.p);
                 let new_pc_ll = self.mem.read_byte(0xFFFE);
                 let new_pc_hh = self.mem.read_byte(0xFFFF);
