@@ -13,7 +13,8 @@ const Z_FLAG_BITMASK: u8 = 0b00000010;
 const C_FLAG_BITMASK: u8 = 0b00000001;
 const UNUSED_FLAG_BITMASK: u8 = 0b00100000;
 const FLAGS_DEFAULT: u8 = 0b00100000;
-const STACK_ADDR_DEFAULT: u16 = 0x01FF;
+const STACK_ADDR_DEFAULT: u8 = 0xFF;
+const STACK_DEFAULT_PAGE: u8 = 0x01;
 
 pub struct Cpu<M> {
     // Program counter
@@ -25,7 +26,7 @@ pub struct Cpu<M> {
     // Flags
     p: u8,
     // Stack pointer.
-    sp: u16,
+    sp: u8,
     pub mem: M,
     ir: Option<Inst>,
     cycle_count: usize,
@@ -97,13 +98,15 @@ where
     }
 
     pub(crate) fn stack_push(&mut self, bb: u8) {
-        self.mem.write_byte(self.sp, bb);
-        self.sp -= 1;
+        let stack_addr = u16::from_be_bytes([STACK_DEFAULT_PAGE, self.sp]);
+        self.mem.write_byte(stack_addr, bb);
+        self.sp = self.sp.wrapping_sub(1);
     }
 
     pub(crate) fn stack_pop(&mut self) -> u8 {
-        self.sp += 1;
-        self.mem.read_byte(self.sp)
+        self.sp = self.sp.wrapping_add(1);
+        let stack_addr = u16::from_be_bytes([STACK_DEFAULT_PAGE, self.sp]);
+        self.mem.read_byte(stack_addr)
     }
 
     /// Checks if value is Zero and updates Z flag accordingly
@@ -226,7 +229,7 @@ where
 
     #[inline]
     pub fn sp(&self) -> u16 {
-        self.sp
+        u16::from_be_bytes([STACK_DEFAULT_PAGE, self.sp])
     }
 
     #[inline]
@@ -919,7 +922,7 @@ where
                 self.update_z_flag_with(self.ac);
             }
             Inst::TSX => {
-                let [_sp_hh, sp_ll] = self.sp.to_be_bytes();
+                let sp_ll = self.sp;
                 self.x = sp_ll;
                 self.update_z_flag_with(self.x);
                 self.update_n_flag_with(self.x);
@@ -930,7 +933,7 @@ where
                 self.update_z_flag_with(self.ac);
             }
             Inst::TXS => {
-                self.sp = u16::from_be_bytes([0x01, self.x]);
+                self.sp = self.x;
             }
             Inst::TYA => {
                 self.ac = self.y;
