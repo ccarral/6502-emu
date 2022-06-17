@@ -664,11 +664,11 @@ where
                 let data = match address_mode {
                     AddressMode::IMM => self.mem.read_byte(self.pc + 1),
                     _ => {
-                        let addr = dbg!(self.get_effective_address(&address_mode));
+                        let addr = self.get_effective_address(&address_mode);
                         self.mem.read_byte(addr)
                     }
                 };
-                self.set_ac(dbg!(data));
+                self.set_ac(data);
                 self.update_z_flag_with(data);
                 self.update_n_flag_with(data);
             }
@@ -1072,15 +1072,18 @@ where
                 util::combine_u8_to_u16(hh, ll)
             }
             AddressMode::INDY => {
-                let ll_addr = u16::wrapping_add(self.pc, 1);
-                let ll = self.mem.read_byte(ll_addr);
+                let zpg_addr_addr = u16::wrapping_add(self.pc, 1);
+                let zpg_addr = self.read_byte_from_mem(zpg_addr_addr);
 
-                let hh_addr = u16::wrapping_add(ll_addr, 1);
-                let hh = self.mem.read_byte(hh_addr);
+                // $0x00LL
+                let ind_ll_addr = u16::from_be_bytes([0x00, zpg_addr]);
+                // $0x00LL + 1
+                let ind_hh_addr = util::wrapping_add_same_page(ind_ll_addr, 1);
 
-                let effective_addr = util::combine_u8_to_u16(hh, ll);
-                let effective_addr = util::wrapping_add_same_page(effective_addr, self.y);
-                effective_addr
+                let ind_ll = self.read_byte_from_mem(ind_ll_addr);
+                let ind_hh = self.read_byte_from_mem(ind_hh_addr);
+                let ind = util::combine_u8_to_u16(ind_hh, ind_ll);
+                util::wrapping_add_same_page(ind, self.y)
             }
         }
     }

@@ -60,11 +60,13 @@ fn test_indirect_x_indexed_addressing() {
 #[test]
 fn test_indirect_y_indexed_addressing() {
     let mut cpu = util::new_cpu_empty_mem();
-    cpu.set_y(0x01);
-    cpu.write_to_mem(0x0001, 0x03);
-    cpu.write_to_mem(0x0002, 0x07);
+    cpu.set_pc(0x00);
+    cpu.write_to_mem(0x01, 0x86);
+    cpu.set_y(0x10);
+    cpu.write_to_mem(0x0086, 0x28);
+    cpu.write_to_mem(0x0087, 0x40);
     let effective_addr = cpu.get_effective_address(&AddressMode::INDY);
-    assert_eq!(effective_addr, 0x0704);
+    assert_eq!(effective_addr, 0x4038);
 }
 
 #[test]
