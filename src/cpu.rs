@@ -423,16 +423,15 @@ where
                 }
             }
             Inst::BIT => {
-                let operand = {
+                let operand = dbg!({
                     let addr = self.get_effective_address(&address_mode);
                     self.mem.read_byte(addr)
-                };
-                let equal = self.ac == operand;
+                });
+                // let z_flag = self.ac & operand;
                 let m7 = 0b1000_0000 & operand != 0;
                 let m6 = 0b0100_0000 & operand != 0;
 
-                // Z = 0 if equal, 1 if not
-                self.write_z_flag(!equal);
+                self.update_z_flag_with(self.ac & operand);
                 self.write_v_flag(m6);
                 self.write_n_flag(m7);
             }
