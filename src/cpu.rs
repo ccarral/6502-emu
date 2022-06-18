@@ -1031,13 +1031,16 @@ where
                 u16::wrapping_add(base, index)
             }
             AddressMode::ABSY => {
+                // PC + 1
                 let ll_addr = u16::wrapping_add(self.pc, 1);
+                // PC + 2
                 let hh_addr = u16::wrapping_add(self.pc, 2);
-                let ll = self.mem.read_byte(ll_addr);
-                let hh = self.mem.read_byte(hh_addr);
+                let ll = self.read_byte_from_mem(ll_addr);
+                let hh = self.read_byte_from_mem(hh_addr);
                 let base = util::combine_u8_to_u16(hh, ll);
                 let index = util::u8_to_u16(self.y);
                 u16::wrapping_add(base, index)
+                // base + index
             }
             AddressMode::IND => {
                 // NOTE: This mode doesn't cross page boundaries.
@@ -1076,14 +1079,18 @@ where
                 let zpg_addr = self.read_byte_from_mem(zpg_addr_addr);
 
                 // $0x00LL
-                let ind_ll_addr = u16::from_be_bytes([0x00, zpg_addr]);
+                let ind_ll_addr = util::u8_to_u16(zpg_addr);
                 // $0x00LL + 1
-                let ind_hh_addr = util::wrapping_add_same_page(ind_ll_addr, 1);
+                let ind_hh_addr = u8::wrapping_add(zpg_addr, 1);
+                let ind_hh_addr = util::u8_to_u16(ind_hh_addr);
 
                 let ind_ll = self.read_byte_from_mem(ind_ll_addr);
                 let ind_hh = self.read_byte_from_mem(ind_hh_addr);
                 let ind = util::combine_u8_to_u16(ind_hh, ind_ll);
-                util::wrapping_add_same_page(ind, self.y)
+                let y = util::u8_to_u16(self.y);
+
+                // This addressing mode DOES cross page boundaries
+                u16::wrapping_add(ind, y)
             }
         }
     }
