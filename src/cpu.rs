@@ -11,7 +11,8 @@ const D_FLAG_BITMASK: u8 = 0b00001000;
 const I_FLAG_BITMASK: u8 = 0b00000100;
 const Z_FLAG_BITMASK: u8 = 0b00000010;
 const C_FLAG_BITMASK: u8 = 0b00000001;
-const UNUSED_FLAG_BITMASK: u8 = 0b00100000;
+const RESERVED_FLAG_BITMASK: u8 = 0b00100000;
+const FLAGS_ALWAYS_ON: u8 = RESERVED_FLAG_BITMASK | B_FLAG_BITMASK;
 const FLAGS_DEFAULT: u8 = 0b00100000;
 const STACK_ADDR_DEFAULT: u8 = 0xFF;
 const STACK_DEFAULT_PAGE: u8 = 0x01;
@@ -463,7 +464,7 @@ where
                 let [pc_hh, pc_ll] = pc.to_be_bytes();
                 self.stack_push(pc_hh);
                 self.stack_push(pc_ll);
-                self.stack_push(self.p | UNUSED_FLAG_BITMASK | B_FLAG_BITMASK);
+                self.stack_push(self.p | FLAGS_ALWAYS_ON);
                 self.write_i_flag(true);
                 let new_pc_ll = self.mem.read_byte(0xFFFE);
                 let new_pc_hh = self.mem.read_byte(0xFFFF);
@@ -740,7 +741,7 @@ where
                 self.stack_push(self.ac);
             }
             Inst::PHP => {
-                self.stack_push(self.p | B_FLAG_BITMASK | UNUSED_FLAG_BITMASK);
+                self.stack_push(self.p | FLAGS_ALWAYS_ON);
             }
             Inst::PLA => {
                 let ac = self.stack_pop();
@@ -749,8 +750,8 @@ where
                 self.update_n_flag_with(ac);
             }
             Inst::PLP => {
-                let p = self.stack_pop();
-                self.p = (p | UNUSED_FLAG_BITMASK) & !(B_FLAG_BITMASK);
+                let p = self.stack_pop() | FLAGS_ALWAYS_ON;
+                self.p = p;
             }
             Inst::ROL => {
                 let (is_memory, operand, address) = {
