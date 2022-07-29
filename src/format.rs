@@ -28,7 +28,7 @@ where
             self.x(),
             self.y(),
             self.sp(),
-            if &self.sp() == &0x01FF {
+            if self.sp() == 0x01FF {
                 "empty".to_string()
             } else {
                 let sp = &self.sp();

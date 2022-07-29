@@ -706,8 +706,11 @@ where
                     }
                 };
 
-                // Set c flag if bit 0 of ac is set
+                // Set C flag if bit 0 of ac is set
                 self.write_c_flag(operand & 0b00000001 != 0);
+
+                // Reset N flag
+                self.write_n_flag(false);
 
                 let result = operand >> 1;
                 self.update_z_flag_with(result);
