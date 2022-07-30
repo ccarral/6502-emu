@@ -328,24 +328,10 @@ where
                     result
                 } else {
                     let ac = self.ac;
-                    let ac_signed = {
-                        let bytes = ac.to_be_bytes();
-                        i8::from_be_bytes(bytes)
-                    };
-
-                    let data_signed = {
-                        let bytes = data.to_be_bytes();
-                        i8::from_be_bytes(bytes)
-                    };
-
-                    // dbg!(ac_signed, data_signed);
-
-                    let (res_1, overflow_1) = ac_signed.overflowing_add(data_signed);
-                    let (_res_2, overflow_2) =
-                        res_1.overflowing_add(if self.c_flag() { 1 } else { 0 });
                     let (result, carry) = ac.carrying_add(data, self.c_flag());
+                    let overflow = (ac ^ result) & (data ^ result) & 0b10000000 != 0;
                     self.write_c_flag(carry);
-                    self.write_v_flag(overflow_1 || overflow_2);
+                    self.write_v_flag(overflow);
                     result
                 };
 

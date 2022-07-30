@@ -7,25 +7,65 @@ pub fn test_adc() {
 
     cpu.write_c_flag(false);
     cpu.set_ac(0x01);
+    cpu.write_to_mem(0x0001, 0x01);
+    cpu.step_inst(Inst::ADC, AddressMode::IMM).unwrap();
+    assert!(!cpu.c_flag());
+    assert_eq!(cpu.ac(), 0x02);
+
+    cpu.set_pc(0x00);
+    cpu.write_c_flag(false);
+    cpu.set_ac(0x01);
     cpu.write_to_mem(0x0001, 0xFF);
     cpu.step_inst(Inst::ADC, AddressMode::IMM).unwrap();
+    assert_eq!(cpu.ac(), 0x00);
     assert!(cpu.c_flag());
-    assert_eq!(cpu.ac(), 0);
 
+    cpu.set_pc(0x00);
     cpu.write_c_flag(false);
     cpu.set_ac(0x80);
-    cpu.write_to_mem(0x0003, 0xFF);
-    cpu.step_inst(Inst::ADC, AddressMode::IMM).unwrap();
-    assert_eq!(cpu.ac(), 0x7F);
-    assert!(cpu.c_flag());
-
-    cpu.write_c_flag(true);
-    cpu.set_ac(0x3F);
-    assert_eq!(cpu.pc(), 0x0004);
-    cpu.write_to_mem(0x0005, 0x40);
+    cpu.write_to_mem(0x0001, 0xFF);
     cpu.step_inst(Inst::ADC, AddressMode::IMM).unwrap();
     assert!(cpu.v_flag());
-    assert_eq!(cpu.ac(), 0x80);
+    assert!(cpu.c_flag());
+
+    cpu.set_pc(0x00);
+    cpu.write_c_flag(true);
+    cpu.set_ac(0x3F);
+    cpu.write_to_mem(0x0001, 0x40);
+    cpu.step_inst(Inst::ADC, AddressMode::IMM).unwrap();
+    assert!(cpu.v_flag());
+    assert!(!cpu.c_flag());
+
+    cpu.set_pc(0x00);
+    cpu.write_c_flag(false);
+    cpu.set_ac(0b01000000);
+    cpu.write_to_mem(0x0001, 0b01000001);
+    cpu.step_inst(Inst::ADC, AddressMode::IMM).unwrap();
+    assert!(cpu.v_flag());
+
+    cpu.set_pc(0x00);
+    cpu.write_c_flag(true);
+    cpu.set_ac(0b01000000);
+    cpu.write_to_mem(0x0001, 0b01000001);
+    cpu.step_inst(Inst::ADC, AddressMode::IMM).unwrap();
+    assert!(cpu.v_flag());
+
+    cpu.set_pc(0x00);
+    cpu.write_c_flag(false);
+    cpu.set_ac(0b11111111);
+    cpu.write_to_mem(0x0001, 0b11111111);
+    cpu.step_inst(Inst::ADC, AddressMode::IMM).unwrap();
+    assert!(!cpu.v_flag());
+    assert!(cpu.c_flag());
+
+    cpu.set_pc(0x00);
+    cpu.write_c_flag(false);
+    cpu.set_ac(0b11000000);
+    cpu.write_to_mem(0x0001, 0b10111111);
+    cpu.step_inst(Inst::ADC, AddressMode::IMM).unwrap();
+    assert!(cpu.v_flag());
+    assert!(cpu.c_flag());
+    assert_eq!(cpu.ac(), 0b01111111);
 }
 
 #[test]
