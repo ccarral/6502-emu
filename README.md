@@ -16,7 +16,7 @@ A lightweight and simple 6502 emulation library.
 ```rust
 use mini6502::{Cpu, SimpleMemory}
 
-let rom : Vec<u8> = std::fs::read("my_rom").unwrap();
+let rom : Vec<u8> = std::fs::read("my_rom.bin").unwrap();
 
 let memory = SimpleMemory::from_rom(&rom);
 
