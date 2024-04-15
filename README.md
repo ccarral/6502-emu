@@ -24,6 +24,7 @@ let mut cpu = Cpu::with_mem(memory);
 
 let stdin = std::io::stdin();
 
+// Pass a closure that will be run every time before stepping an instruction.
 cpu.run(|cpu: &Cpu<SimpleMemory>|{
     println!("{cpu}");
     //      Instruction: LDA
