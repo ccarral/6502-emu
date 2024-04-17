@@ -117,6 +117,7 @@ where
     /// * `val` - value to be checked
     pub(crate) fn update_z_flag_with(&mut self, val: u8) {
         if val == 0x00 {
+            dbg!(val);
             self.p |= Z_FLAG_BITMASK;
         } else {
             self.p &= !Z_FLAG_BITMASK;
@@ -410,11 +411,10 @@ where
                 }
             }
             Inst::BIT => {
-                let operand = dbg!({
+                let operand = {
                     let addr = self.get_effective_address(&address_mode);
                     self.mem.read_byte(addr)
-                });
-                // let z_flag = self.ac & operand;
+                };
                 let m7 = 0b1000_0000 & operand != 0;
                 let m6 = 0b0100_0000 & operand != 0;
 

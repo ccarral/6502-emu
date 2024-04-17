@@ -202,20 +202,26 @@ pub fn test_branch_instructions() {
 #[test]
 pub fn test_bit() {
     let mut cpu = util::new_cpu_empty_mem();
-    cpu.write_to_mem(0x0500, 0x69);
-    cpu.set_ac(0x69);
+    cpu.write_to_mem(0x0500, 0b1100_0000);
+    cpu.set_ac(0b0011_0000);
     cpu.write_to_mem(0x0001, 0x00);
     cpu.write_to_mem(0x0002, 0x05);
+    println!("{cpu}");
     cpu.step_inst(Inst::BIT, AddressMode::ABS).unwrap();
-    // Equal, so Z = 0
-    assert!(!cpu.z_flag());
-
-    cpu.set_ac(0x87);
-    cpu.write_to_mem(0x0040, 0x88);
-    cpu.write_to_mem(0x0004, 0x40);
-    cpu.step_inst(Inst::BIT, AddressMode::ZPG).unwrap();
-    // Different, so Z = 1
+    // A & M == 0 -> Z == 1
     assert!(cpu.z_flag());
+    assert!(cpu.v_flag());
+    assert!(cpu.n_flag());
+
+    cpu.set_ac(0b0100_0000);
+    cpu.write_to_mem(0x0040, 0b0100_0000);
+    cpu.write_to_mem(0x0004, 0x40);
+    println!("{cpu}");
+    cpu.step_inst(Inst::BIT, AddressMode::ZPG).unwrap();
+    // A & Z != 0, so Z == 0
+    assert!(!cpu.z_flag());
+    assert!(cpu.v_flag());
+    assert!(!cpu.n_flag());
 }
 
 #[test]
